@@ -127,7 +127,6 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 
 	case SYSCALL_NR_FRONT(open):
 		ret = sys_open(sys->mem_base + args[0], args[1], args[2]);
-		debug("open \"%s\" ret %d\n", sys->mem_base + args[0], ret);
 		break;
 
 	case SYSCALL_NR_FRONT(read):
