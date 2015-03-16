@@ -33,9 +33,7 @@ include src/backend/$(BACK_ARCH)/Makefile
 s_objects := $(patsubst %.S,%.o,$(s_source))
 c_objects := $(patsubst %.c,%.o,$(c_source))
 objects := $(s_objects) $(c_objects)
-
 depfiles := $(patsubst %.o,%.d,$(objects))
--include $(depfiles)
 
 .PHONY: all
 all: hoodwink
@@ -67,3 +65,5 @@ hoodwink.elf: $(objects) Makefile
 %.o: %.S Makefile
 	$(CC) $(c_flags) $(CFLAGS) -o $@ -c $<
 	$(CC) $(c_flags) $(CFLAGS) -MM -o $*.d -c $<
+
+-include $(depfiles)
