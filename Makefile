@@ -60,10 +60,10 @@ hoodwink.elf: $(objects) Makefile
 
 %.o: %.c Makefile
 	$(CC) $(c_flags) $(CFLAGS) -o $@ -c $<
-	$(CC) $(c_flags) $(CFLAGS) -MM -o $*.d -c $<
+	$(CC) $(c_flags) $(CFLAGS) -MM -MT -c $< >$*.d
 
 %.o: %.S Makefile
 	$(CC) $(c_flags) $(CFLAGS) -o $@ -c $<
-	$(CC) $(c_flags) $(CFLAGS) -MM -o $*.d -c $<
+	$(CC) $(c_flags) $(CFLAGS) -MM -MT -c $< >$*.d
 
 -include $(depfiles)
