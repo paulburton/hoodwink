@@ -63,6 +63,7 @@ enum mips_op_spec {
 	MIPS_SPEC_SRA		= 0x03,
 	MIPS_SPEC_SLLV		= 0x04,
 	MIPS_SPEC_SRLV		= 0x06,
+	MIPS_SPEC_SRAV		= 0x07,
 	MIPS_SPEC_JR		= 0x08,
 	MIPS_SPEC_JALR		= 0x09,
 	MIPS_SPEC_MOVZ		= 0x0a,

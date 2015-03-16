@@ -90,6 +90,12 @@ void frontend_interp(struct mips32_state *mips)
 				gpr[rd] = gpr[rt] >> gpr[rs];
 			break;
 
+		case MIPS_SPEC_SRAV:
+			debug("srav\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
+			if (rd)
+				gpr[rd] = (int32_t)gpr[rt] >> gpr[rs];
+			break;
+
 		case MIPS_SPEC_JR:
 			debug("jr\t%s\n", reg_names[rs]);
 			next_pc = gpr[rs];
