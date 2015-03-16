@@ -1,0 +1,5 @@
+*.d
+*.o
+
+/hoodwink
+/hoodwink.elf
