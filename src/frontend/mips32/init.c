@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "elf.h"
 #include "mips32.h"
+#include "mm.h"
 #include "string.h"
 #include "sys.h"
 #include "syscall.h"
@@ -50,6 +51,9 @@ void frontend_init(const char *filename)
 		sys_exit(1);
 	}
 	debug("MIPS memory at 0x%p\n", mips.sys.mem_base);
+
+	mips.sys.page_bits = 12;
+	mm_init(&mips.sys);
 
 	stack_sz = 128 << 10;
 	prot = PROT_READ | PROT_WRITE | PROT_EXEC;

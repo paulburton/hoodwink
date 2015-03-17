@@ -36,7 +36,6 @@
 #define MAP_SHARED	0x01
 #define MAP_PRIVATE	0x02
 #define MAP_FIXED	0x10
-#define MAP_ANONYMOUS	0x20
 
 #define DECLARE_TYPEDEFS(arch, prefix)					\
 	typedef arch##_mode_t			prefix##mode_t;		\
@@ -50,6 +49,7 @@
 	typedef struct arch##_utsname		prefix##utsname_s;
 
 #define DECLARE_CONSTANTS(arch, prefix)					\
+	static const int prefix##MAP_ANONYMOUS = arch##_MAP_ANONYMOUS;	\
 	static const int prefix##O_RDONLY = arch##_O_RDONLY;		\
 	static const int prefix##O_WRONLY = arch##_O_WRONLY;		\
 	static const int prefix##O_RDWR = arch##_O_RDWR;		\
@@ -65,5 +65,21 @@ DECLARE_CONSTANTS(MIPS32, FRONT_)
 DECLARE_TYPEDEFS(x86_64,)
 DECLARE_CONSTANTS(X86_64,)
 #endif
+
+static inline int f2b_mmap_flags(int f)
+{
+	int b = 0;
+
+	if (f & MAP_SHARED)
+		b |= MAP_SHARED;
+	if (f & MAP_PRIVATE)
+		b |= MAP_PRIVATE;
+	if (f & MAP_FIXED)
+		b |= MAP_FIXED;
+	if (f & FRONT_MAP_ANONYMOUS)
+		b |= MAP_ANONYMOUS;
+
+	return b;
+}
 
 #endif /* __hoodwink_types_h__ */

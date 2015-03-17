@@ -51,6 +51,8 @@ struct mips32_utsname {
 	char machine[65];
 };
 
+#define MIPS32_MAP_ANONYMOUS	0x0800
+
 #define MIPS32_O_RDONLY		0x00000
 #define MIPS32_O_WRONLY		0x00001
 #define MIPS32_O_RDWR		0x00002

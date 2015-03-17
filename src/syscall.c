@@ -1,4 +1,5 @@
 #include "debug.h"
+#include "mm.h"
 #include "string.h"
 #include "syscall.h"
 #include "util.h"
@@ -122,7 +123,11 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 		break;
 
 	case SYSCALL_NR_FRONT(mmap):
-		ret = -1;
+		ret = mm_mmap(sys, args[0], args[1], args[2], f2b_mmap_flags(args[3]), args[4], args[5]);
+		break;
+
+	case SYSCALL_NR_FRONT(mprotect):
+		ret = sys_mprotect(sys->mem_base + args[0], args[1], args[2]);
 		break;
 
 	case SYSCALL_NR_FRONT(open):

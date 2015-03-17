@@ -48,6 +48,8 @@ struct x86_64_utsname {
 	char domainname[65];
 };
 
+#define X86_64_MAP_ANONYMOUS	0x0020
+
 #define X86_64_O_RDONLY		0x00000
 #define X86_64_O_WRONLY		0x00001
 #define X86_64_O_RDWR		0x00002
