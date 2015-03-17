@@ -10,10 +10,7 @@
 	.nargs = VA_NUM_ARGS(__VA_ARGS__),					\
 },
 
-static const struct syscall_info {
-	char *name;
-	unsigned nargs;
-} syscall_info[] = {
+static const struct syscall_info syscall_info[] = {
 #include "syscall-list.h"
 };
 
@@ -35,6 +32,9 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 	} else {
 		info = NULL;
 	}
+
+	if (!info)
+		info = frontend_syscall_arch_info(sys, num);
 
 	nargs = info ? info->nargs : 0;
 	frontend_syscall_args(sys, nargs, args);

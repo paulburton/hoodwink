@@ -4,6 +4,11 @@
 #include "syscall.h"
 #include "util.h"
 
+static const struct syscall_info info_set_thread_area = {
+	.name = "set_thread_area",
+	.nargs = 1,
+};
+
 void frontend_syscall_args(struct sys_state *sys, unsigned nargs, uint32_t *args)
 {
 	struct mips32_state *mips = (struct mips32_state *)sys;
@@ -24,6 +29,17 @@ void frontend_syscall_ret(struct sys_state *sys, uint32_t ret)
 
 	mips->cpu.gpr[2] = ret;
 	mips->cpu.gpr[7] = IS_ERROR(ret);
+}
+
+const struct syscall_info *frontend_syscall_arch_info(struct sys_state *sys, unsigned num)
+{
+	switch (num) {
+	case SYSCALL_NR_FRONT(set_thread_area):
+		return &info_set_thread_area;
+
+	default:
+		return NULL;
+	}
 }
 
 uint32_t frontend_syscall_arch_invoke(struct sys_state *sys, unsigned num, uint32_t args[static 8])

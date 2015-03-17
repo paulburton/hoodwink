@@ -33,6 +33,11 @@ extern void sys_exit(int status) __attribute__((noreturn));
 #define IS_ERROR(x) \
 	((x) >= (typeof(x))-4095)
 
+struct syscall_info {
+	char *name;
+	unsigned nargs;
+};
+
 /* generic frontend code */
 extern void frontend_syscall_invoke(struct sys_state *sys, unsigned num);
 
@@ -40,6 +45,7 @@ extern void frontend_syscall_invoke(struct sys_state *sys, unsigned num);
 extern void frontend_syscall_args(struct sys_state *sys, unsigned nargs, uint32_t *args);
 extern void frontend_syscall_ret(struct sys_state *sys, uint32_t ret);
 
+extern const struct syscall_info *frontend_syscall_arch_info(struct sys_state *sys, unsigned num);
 extern uint32_t frontend_syscall_arch_invoke(struct sys_state *sys, unsigned num, uint32_t args[static 8]);
 
 #endif /* __hoodwink_syscall_h__ */
