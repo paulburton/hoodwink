@@ -465,6 +465,12 @@ void frontend_interp(struct mips32_state *mips)
 		case MIPS_SPEC3_BSHFL:
 			op = (inst >> 6) & 0x1f;
 			switch (op) {
+			case MIPS_BSHFL_SEB:
+				debug("seb\t%s, %s\n", reg_names[rd], reg_names[rt]);
+				if (rd)
+					gpr[rd] = se8(gpr[rt]);
+				break;
+
 			case MIPS_BSHFL_SEH:
 				debug("seh\t%s, %s\n", reg_names[rd], reg_names[rt]);
 				if (rd)

@@ -100,6 +100,7 @@ enum mips_op_spec3 {
 };
 
 enum mips_op_spec3_bshfl {
+	MIPS_BSHFL_SEB		= 0x10,
 	MIPS_BSHFL_SEH		= 0x18,
 };
 
