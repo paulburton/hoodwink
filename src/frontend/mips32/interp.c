@@ -180,7 +180,10 @@ void frontend_interp(struct mips32_state *mips)
 			break;
 
 		case MIPS_SPEC_ADDU:
-			debug("addu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			if (rt)
+				debug("addu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			else
+				debug("move\t%s, %s\n", reg_names[rd], reg_names[rs]);
 			if (rd)
 				gpr[rd] = gpr[rs] + gpr[rt];
 			break;
