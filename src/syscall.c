@@ -7,7 +7,7 @@
 #define NUM_OFFSET SYSCALL_NR_FRONT(_min)
 
 #define SYSCALL(_name, _ret, ...) [SYSCALL_NR_FRONT(_name) - NUM_OFFSET] = {	\
-	.name = #_name,								\
+	SYSCALL_NAME(#_name)							\
 	.nargs = VA_NUM_ARGS(__VA_ARGS__),					\
 },
 
@@ -28,8 +28,10 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 
 	if ((num - NUM_OFFSET) < ARRAY_SIZE(syscall_info)) {
 		info = &syscall_info[num - NUM_OFFSET];
+#ifdef DEBUG
 		if (!info->name)
 			info = NULL;
+#endif
 	} else {
 		info = NULL;
 	}
@@ -40,10 +42,12 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 	nargs = info ? info->nargs : 0;
 	frontend_syscall_args(sys, nargs, args);
 
+#ifdef DEBUG
 	debug("syscall %u %s(", num, info ? info->name : "UNKNOWN");
 	for (i = 0; i < nargs; i++)
 		debug("%s0x%x", i ? ", " : "", args[i]);
 	debug(")\n");
+#endif
 
 	switch (num) {
 	case SYSCALL_NR_FRONT(brk):

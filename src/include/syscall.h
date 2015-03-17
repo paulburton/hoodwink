@@ -34,9 +34,17 @@ extern void sys_exit(int status) __attribute__((noreturn));
 	((x) >= (typeof(x))-4095)
 
 struct syscall_info {
+#ifdef DEBUG
 	char *name;
+#endif
 	unsigned nargs;
 };
+
+#ifdef DEBUG
+# define SYSCALL_NAME(n) .name = #n,
+#else
+# define SYSCALL_NAME(n)
+#endif
 
 /* generic frontend code */
 extern void frontend_syscall_invoke(struct sys_state *sys, unsigned num);

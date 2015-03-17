@@ -5,7 +5,7 @@
 #include "util.h"
 
 static const struct syscall_info info_set_thread_area = {
-	.name = "set_thread_area",
+	SYSCALL_NAME(set_thread_area)
 	.nargs = 1,
 };
 
