@@ -118,6 +118,30 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 		}
 		break;
 
+	case SYSCALL_NR_FRONT(getcwd):
+		ret = sys_getcwd(sys->mem_base + args[0], args[1]);
+		break;
+
+	case SYSCALL_NR_FRONT(getegid):
+		ret = sys_getegid();
+		break;
+
+	case SYSCALL_NR_FRONT(geteuid):
+		ret = sys_geteuid();
+		break;
+
+	case SYSCALL_NR_FRONT(getgid):
+		ret = sys_getgid();
+		break;
+
+	case SYSCALL_NR_FRONT(getuid):
+		ret = sys_getuid();
+		break;
+
+	case SYSCALL_NR_FRONT(getpgrp):
+		ret = sys_getpgrp();
+		break;
+
 	case SYSCALL_NR_FRONT(getpid):
 		ret = sys_getpid();
 		break;
@@ -136,6 +160,10 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 
 	case SYSCALL_NR_FRONT(read):
 		ret = sys_read(args[0], sys->mem_base + args[1], args[2]);
+		break;
+
+	case SYSCALL_NR_FRONT(readlink):
+		ret = sys_readlink(sys->mem_base + args[0], sys->mem_base + args[1], args[2]);
 		break;
 
 	case SYSCALL_NR_FRONT(uname):

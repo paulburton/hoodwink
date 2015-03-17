@@ -3,11 +3,13 @@
 
 #include <stdint.h>
 
+typedef uint32_t	x86_64_gid_t;
 typedef uint32_t	x86_64_mode_t;
 typedef uint64_t	x86_64_off_t;
 typedef int32_t		x86_64_pid_t;
 typedef uint64_t	x86_64_size_t;
 typedef int64_t		x86_64_ssize_t;
+typedef uint32_t	x86_64_uid_t;
 
 struct x86_64_iovec {
 	uint64_t	iov_base;

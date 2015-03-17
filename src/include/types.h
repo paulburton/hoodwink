@@ -38,11 +38,13 @@
 #define MAP_FIXED	0x10
 
 #define DECLARE_TYPEDEFS(arch, prefix)					\
+	typedef arch##_gid_t			prefix##gid_t;		\
 	typedef arch##_mode_t			prefix##mode_t;		\
 	typedef arch##_off_t			prefix##off_t;		\
 	typedef arch##_pid_t			prefix##pid_t;		\
 	typedef arch##_size_t			prefix##size_t;		\
 	typedef arch##_ssize_t			prefix##ssize_t;	\
+	typedef arch##_uid_t			prefix##uid_t;		\
 	typedef struct arch##_iovec		prefix##iovec_s;	\
 	typedef struct arch##_stat		prefix##stat_s;		\
 	typedef struct arch##_stat64		prefix##stat64_s;	\
