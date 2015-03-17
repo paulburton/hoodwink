@@ -46,6 +46,7 @@ enum mips_op {
 	MIPS_OP_SWR		= 0x2e,
 	MIPS_OP_LL		= 0x30,
 	MIPS_OP_PREF		= 0x33,
+	MIPS_OP_LDC1		= 0x35,
 	MIPS_OP_SC		= 0x38,
 	MIPS_OP_SDC1		= 0x3d,
 };

@@ -593,6 +593,12 @@ void frontend_interp(struct mips32_state *mips)
 		debug("pref\t0x%x, %d(%s)\n", rt, simm, reg_names[rs]);
 		break;
 
+	case MIPS_OP_LDC1:
+		debug("ldc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
+		fpr[rt] = *(uint64_t *)ptr;
+		break;
+
 	case MIPS_OP_SC:
 		debug("sc\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
