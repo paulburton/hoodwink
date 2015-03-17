@@ -3,8 +3,9 @@
 #include "syscall.h"
 #include "util.h"
 
-int translate_sys_uname(front_utsname_s *buf)
+uint32_t translate_sys_uname(struct sys_state *sys, uint32_t *args)
 {
+	front_utsname_s *buf = sys->mem_base + args[0];
 	utsname_s h;
 	int err;
 

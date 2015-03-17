@@ -4,11 +4,6 @@
 #include "syscall.h"
 #include "util.h"
 
-static const struct syscall_info info_set_thread_area = {
-	SYSCALL_NAME(set_thread_area)
-	.nargs = 1,
-};
-
 void frontend_syscall_args(struct sys_state *sys, unsigned nargs, uint32_t *args)
 {
 	struct mips32_state *mips = (struct mips32_state *)sys;
@@ -31,6 +26,19 @@ void frontend_syscall_ret(struct sys_state *sys, uint32_t ret)
 	mips->cpu.gpr[7] = IS_ERROR(ret);
 }
 
+static uint32_t translate_sys_set_thread_area(struct sys_state *sys, uint32_t *args)
+{
+	struct mips32_state *mips = (struct mips32_state *)sys;
+	mips->cpu.ulr = args[0];
+	return 0;
+}
+
+static const struct syscall_info info_set_thread_area = {
+	SYSCALL_NAME(set_thread_area)
+	.nargs = 1,
+	.translate = translate_sys_set_thread_area,
+};
+
 const struct syscall_info *frontend_syscall_arch_info(struct sys_state *sys, unsigned num)
 {
 	switch (num) {
@@ -39,19 +47,5 @@ const struct syscall_info *frontend_syscall_arch_info(struct sys_state *sys, uns
 
 	default:
 		return NULL;
-	}
-}
-
-uint32_t frontend_syscall_arch_invoke(struct sys_state *sys, unsigned num, uint32_t args[static 8])
-{
-	struct mips32_state *mips = (struct mips32_state *)sys;
-
-	switch (num) {
-	case SYSCALL_NR_FRONT(set_thread_area):
-		mips->cpu.ulr = args[0];
-		return 0;
-
-	default:
-		return -1;
 	}
 }
