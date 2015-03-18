@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+typedef int32_t		mips32_int_t;
+
 typedef int32_t		mips32_gid_t;
 typedef uint16_t	mips32_mode_t;
 typedef uint32_t	mips32_off_t;
@@ -51,7 +53,13 @@ struct mips32_utsname {
 	char machine[65];
 };
 
+#define MIPS32_EINVAL		22
+
+#define MIPS32_MAP_SHARED	0x0001
+#define MIPS32_MAP_PRIVATE	0x0002
+#define MIPS32_MAP_FIXED	0x0010
 #define MIPS32_MAP_ANONYMOUS	0x0800
+#define MIPS32_MAP_DENYWRITE	0x2000
 
 #define MIPS32_O_RDONLY		0x00000
 #define MIPS32_O_WRONLY		0x00001
@@ -59,5 +67,10 @@ struct mips32_utsname {
 #define MIPS32_O_CREAT		0x00100
 #define MIPS32_O_TRUNC		0x00200
 #define MIPS32_O_CLOEXEC	0x80000
+
+#define MIPS32_PROT_NONE	0x0
+#define MIPS32_PROT_READ	0x1
+#define MIPS32_PROT_WRITE	0x2
+#define MIPS32_PROT_EXEC	0x4
 
 #endif /* __hoodwink_mips32_types_h__ */

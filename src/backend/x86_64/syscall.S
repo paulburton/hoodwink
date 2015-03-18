@@ -7,7 +7,7 @@
 .globl sys_##name;				\
 sys_##name:					\
 	movl	$X86_64_NR_##name, %eax;	\
-.if	VA_NUM_ARGS(__VA_ARGS__) >= 4;		\
+.if	VA_NUM_ARGS_NOZERO(__VA_ARGS__) >= 4;	\
 	mov	%rcx, %r10;			\
 .endif;						\
 	syscall;				\

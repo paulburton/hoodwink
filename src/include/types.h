@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "util.h"
+
 #if defined(FRONT_ARCH_MIPS32) || defined(BACK_ARCH_MIPS32)
 # include "mips32/types.h"
 #endif
@@ -26,18 +28,8 @@
 #define S_IWOTH		00002
 #define S_IXOTH		00001
 
-/* prot_t */
-#define PROT_NONE	0x0
-#define PROT_READ	0x1
-#define PROT_WRITE	0x2
-#define PROT_EXEC	0x4
-
-/* mmap flags */
-#define MAP_SHARED	0x01
-#define MAP_PRIVATE	0x02
-#define MAP_FIXED	0x10
-
 #define DECLARE_TYPEDEFS(arch, prefix)					\
+	typedef arch##_int_t			prefix##int_t;		\
 	typedef arch##_gid_t			prefix##gid_t;		\
 	typedef arch##_mode_t			prefix##mode_t;		\
 	typedef arch##_off_t			prefix##off_t;		\
@@ -51,12 +43,21 @@
 	typedef struct arch##_utsname		prefix##utsname_s;
 
 #define DECLARE_CONSTANTS(arch, prefix)					\
+	static const int prefix##EINVAL = arch##_EINVAL;		\
 	static const int prefix##MAP_ANONYMOUS = arch##_MAP_ANONYMOUS;	\
+	static const int prefix##MAP_DENYWRITE = arch##_MAP_DENYWRITE;	\
+	static const int prefix##MAP_FIXED = arch##_MAP_FIXED;		\
+	static const int prefix##MAP_PRIVATE = arch##_MAP_PRIVATE;	\
+	static const int prefix##MAP_SHARED = arch##_MAP_SHARED;	\
 	static const int prefix##O_RDONLY = arch##_O_RDONLY;		\
 	static const int prefix##O_WRONLY = arch##_O_WRONLY;		\
 	static const int prefix##O_RDWR = arch##_O_RDWR;		\
 	static const int prefix##O_CREAT = arch##_O_CREAT;		\
-	static const int prefix##O_TRUNC = arch##_O_TRUNC;
+	static const int prefix##O_TRUNC = arch##_O_TRUNC;		\
+	static const int prefix##PROT_NONE = arch##_PROT_NONE;		\
+	static const int prefix##PROT_EXEC = arch##_PROT_EXEC;		\
+	static const int prefix##PROT_READ = arch##_PROT_READ;		\
+	static const int prefix##PROT_WRITE = arch##_PROT_WRITE;
 
 #ifdef FRONT_ARCH_MIPS32
 DECLARE_TYPEDEFS(mips32, front_)
@@ -68,20 +69,96 @@ DECLARE_TYPEDEFS(x86_64,)
 DECLARE_CONSTANTS(X86_64,)
 #endif
 
-static inline int f2b_mmap_flags(int f)
-{
-	int b = 0;
+#define _____GEN_FLAG_TRANSLATOR(flag)					\
+	if (f & FRONT_##flag)						\
+		b |= flag;						\
+	handled |= FRONT_##flag;
 
-	if (f & MAP_SHARED)
-		b |= MAP_SHARED;
-	if (f & MAP_PRIVATE)
-		b |= MAP_PRIVATE;
-	if (f & MAP_FIXED)
-		b |= MAP_FIXED;
-	if (f & FRONT_MAP_ANONYMOUS)
-		b |= MAP_ANONYMOUS;
+#define ____GEN_FLAG_TRANSLATOR0(a,b,c,d)
 
-	return b;
+#define ____GEN_FLAG_TRANSLATOR1(a,b,c,d)				\
+	_____GEN_FLAG_TRANSLATOR(d)
+
+#define ____GEN_FLAG_TRANSLATOR2(a,b,c,d)				\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)
+
+#define ____GEN_FLAG_TRANSLATOR3(a,b,c,d)				\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)
+
+#define ____GEN_FLAG_TRANSLATOR4(a,b,c,d)				\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)
+
+#define ____GEN_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)
+
+#define ____GEN_FLAG_TRANSLATOR6(a,b,c,d,e,f)				\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)					\
+	_____GEN_FLAG_TRANSLATOR(f)
+
+#define ____GEN_FLAG_TRANSLATOR7(a,b,c,d,e,f,g)				\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)					\
+	_____GEN_FLAG_TRANSLATOR(f)					\
+	_____GEN_FLAG_TRANSLATOR(g)
+
+#define ____GEN_FLAG_TRANSLATOR8(a,b,c,d,e,f,g,h)			\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)					\
+	_____GEN_FLAG_TRANSLATOR(f)					\
+	_____GEN_FLAG_TRANSLATOR(g)					\
+	_____GEN_FLAG_TRANSLATOR(h)
+
+#define ___GEN_FLAG_TRANSLATOR(M, ...)					\
+	M(__VA_ARGS__)
+
+#define __GEN_FLAG_TRANSLATOR(nflags, ...)				\
+	___GEN_FLAG_TRANSLATOR(CAT(____GEN_FLAG_TRANSLATOR, VA_NUM_ARGS_NOZERO(__VA_ARGS__)), __VA_ARGS__)
+
+#define _GEN_FLAG_TRANSLATOR(...)					\
+	__GEN_FLAG_TRANSLATOR(VA_NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
+
+#define GEN_FLAG_TRANSLATOR(name, type, ...)				\
+static inline type f2b_##name(front_##type f, int *allrec)		\
+{									\
+	front_##type handled = 0;					\
+	type b = 0;							\
+	_GEN_FLAG_TRANSLATOR(__VA_ARGS__)				\
+	if (allrec)							\
+		*allrec = (f & handled) == f;				\
+	return b;							\
 }
+
+GEN_FLAG_TRANSLATOR(mmap_flags, int_t,
+	MAP_ANONYMOUS,
+	MAP_DENYWRITE,
+	MAP_FIXED,
+	MAP_PRIVATE,
+	MAP_SHARED)
+
+GEN_FLAG_TRANSLATOR(prot, int_t,
+	PROT_EXEC,
+	PROT_NONE,
+	PROT_READ,
+	PROT_WRITE)
 
 #endif /* __hoodwink_types_h__ */

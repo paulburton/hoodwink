@@ -3,14 +3,17 @@
 
 #define VA_NUM_ARGS_IMPL(_1,_2,_3,_4,_5,_6,_7,_8,N,...) N
 
-/* note that this won't handle 0 args for assembly! */
-#ifdef __ASSEMBLER__
-# define VA_NUM_ARGS(...) \
+#define VA_NUM_ARGS_NOZERO(...) \
 	VA_NUM_ARGS_IMPL(__VA_ARGS__, 8,7,6,5,4,3,2,1)
-#else
+
+/* note that this won't handle 0 args for assembly! */
+#ifndef __ASSEMBLER__
 # define VA_NUM_ARGS(...) \
-	(sizeof(#__VA_ARGS__) == sizeof("") ? 0 : VA_NUM_ARGS_IMPL(__VA_ARGS__, 8,7,6,5,4,3,2,1))
+	(sizeof(#__VA_ARGS__) == sizeof("") ? 0 : VA_NUM_ARGS_NOZERO(__VA_ARGS__))
 #endif
+
+#define _CAT(a, b) a ## b
+#define CAT(a, b) _CAT(a, b)
 
 #define typeof __typeof__
 

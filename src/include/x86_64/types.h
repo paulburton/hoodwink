@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+typedef int32_t		x86_64_int_t;
+
 typedef uint32_t	x86_64_gid_t;
 typedef uint32_t	x86_64_mode_t;
 typedef uint64_t	x86_64_off_t;
@@ -50,7 +52,13 @@ struct x86_64_utsname {
 	char domainname[65];
 };
 
+#define X86_64_EINVAL		22
+
+#define X86_64_MAP_SHARED	0x0001
+#define X86_64_MAP_PRIVATE	0x0002
+#define X86_64_MAP_FIXED	0x0010
 #define X86_64_MAP_ANONYMOUS	0x0020
+#define X86_64_MAP_DENYWRITE	0x0800
 
 #define X86_64_O_RDONLY		0x00000
 #define X86_64_O_WRONLY		0x00001
@@ -58,5 +66,10 @@ struct x86_64_utsname {
 #define X86_64_O_CREAT	00000100
 #define X86_64_O_TRUNC	00001000
 #define X86_64_O_CLOEXEC	0x80000
+
+#define X86_64_PROT_NONE	0x0
+#define X86_64_PROT_READ	0x1
+#define X86_64_PROT_WRITE	0x2
+#define X86_64_PROT_EXEC	0x4
 
 #endif /* __hoodwink_x86_64_types_h__ */
