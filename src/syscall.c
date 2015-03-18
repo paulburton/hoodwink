@@ -10,7 +10,7 @@
 __attribute__((weak))								\
 uint32_t translate_sys_##_name(struct sys_state *sys, uint32_t *args)		\
 {										\
-	return -1;								\
+	return -FRONT_EINVAL;							\
 }
 
 #include "syscall-list.h"
@@ -58,6 +58,6 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 	(void)i;
 #endif
 
-	ret = info ? info->translate(sys, args) : -1;
+	ret = info ? info->translate(sys, args) : -FRONT_EINVAL;
 	frontend_syscall_ret(sys, ret);
 }
