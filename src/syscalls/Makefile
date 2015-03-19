@@ -6,6 +6,7 @@ local_c_source := \
 	close.c \
 	exit.c \
 	exit_group.c \
+	fork.c \
 	fstat64.c \
 	getcwd.c \
 	getegid.c \
