@@ -4,6 +4,7 @@
 .text
 
 #define SYSCALL(name, ret, ...)			\
+.if	X86_64_NR_##name != -1;			\
 .globl sys_##name;				\
 sys_##name:					\
 	movl	$X86_64_NR_##name, %eax;	\
@@ -11,6 +12,7 @@ sys_##name:					\
 	mov	%rcx, %r10;			\
 .endif;						\
 	syscall;				\
-	retq;
+	retq;					\
+.endif;
 
 #include "syscall-list.h"
