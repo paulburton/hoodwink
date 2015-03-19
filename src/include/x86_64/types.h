@@ -85,4 +85,6 @@ struct x86_64_utsname {
 
 #define X86_64_SIGSEGV		11
 
+#define X86_64_UTSNAME_MACHINE	"x86_64"
+
 #endif /* __hoodwink_x86_64_types_h__ */

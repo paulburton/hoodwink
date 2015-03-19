@@ -5,6 +5,7 @@
 
 uint32_t translate_sys_uname(struct sys_state *sys, uint32_t *args)
 {
+	const char mach[] = FRONT_UTSNAME_MACHINE;
 	front_utsname_s *buf = sys->mem_base + args[0];
 	utsname_s h;
 	int err;
@@ -23,7 +24,7 @@ uint32_t translate_sys_uname(struct sys_state *sys, uint32_t *args)
 		memcpy(buf->version, h.version, min(sizeof(buf->version), sizeof(h.version)));
 		buf->version[sizeof(buf->version) - 1] = 0;
 
-		memcpy(buf->machine, h.machine, min(sizeof(buf->machine), sizeof(h.machine)));
+		memcpy(buf->machine, mach, min(sizeof(buf->machine), sizeof(mach)));
 		buf->machine[sizeof(buf->machine) - 1] = 0;
 	}
 

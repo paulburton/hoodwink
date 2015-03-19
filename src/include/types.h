@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "config.h"
 #include "util.h"
 
 #if defined(FRONT_ARCH_MIPS32) || defined(BACK_ARCH_MIPS32)
@@ -27,6 +28,11 @@
 #define S_IROTH		00004
 #define S_IWOTH		00002
 #define S_IXOTH		00001
+
+#define BACK_UTSNAME_MACHINE \
+	CAT(BACK_ARCH, _UTSNAME_MACHINE)
+#define FRONT_UTSNAME_MACHINE \
+	CAT(FRONT_ARCH, _UTSNAME_MACHINE)
 
 #define DECLARE_TYPEDEFS(arch, prefix)					\
 	typedef arch##_int_t			prefix##int_t;		\

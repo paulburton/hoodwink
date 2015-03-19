@@ -86,4 +86,6 @@ struct mips32_utsname {
 
 #define MIPS32_SIGSEGV		11
 
+#define MIPS32_UTSNAME_MACHINE	"mips"
+
 #endif /* __hoodwink_mips32_types_h__ */
