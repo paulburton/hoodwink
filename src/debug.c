@@ -4,6 +4,7 @@
 #include "string.h"
 #include "syscall.h"
 
+unsigned debug_mask = DEBUG_SYSCALL;
 static int debug_fd;
 
 void debug_init(const char *filename)

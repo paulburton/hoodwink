@@ -51,7 +51,7 @@ void frontend_interp(struct mips32_state *mips)
 	bool do_ds = false;
 	void *ptr;
 
-	debug("interp %8x: %08x ", mips->cpu.pc, inst);
+	debug_in_asm("interp %8x: %08x ", mips->cpu.pc, inst);
 
 	switch (op) {
 	case MIPS_OP_SPEC:
@@ -59,54 +59,54 @@ void frontend_interp(struct mips32_state *mips)
 		switch (op) {
 		case MIPS_SPEC_SLL:
 			if (!inst)
-				debug("nop\n");
+				debug_in_asm("nop\n");
 			else
-				debug("sll\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
+				debug_in_asm("sll\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
 			if (rd)
 				gpr[rd] = gpr[rt] << sa;
 			break;
 
 		case MIPS_SPEC_SRL:
-			debug("srl\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
+			debug_in_asm("srl\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
 			if (rd)
 				gpr[rd] = gpr[rt] >> sa;
 			break;
 
 		case MIPS_SPEC_SRA:
-			debug("sra\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
+			debug_in_asm("sra\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
 			if (rd)
 				gpr[rd] = (int32_t)gpr[rt] >> sa;
 			break;
 
 		case MIPS_SPEC_SLLV:
-			debug("sllv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
+			debug_in_asm("sllv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
 			if (rd)
 				gpr[rd] = gpr[rt] << gpr[rs];
 			break;
 
 		case MIPS_SPEC_SRLV:
-			debug("srlv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
+			debug_in_asm("srlv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
 			if (rd)
 				gpr[rd] = gpr[rt] >> gpr[rs];
 			break;
 
 		case MIPS_SPEC_SRAV:
-			debug("srav\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
+			debug_in_asm("srav\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
 			if (rd)
 				gpr[rd] = (int32_t)gpr[rt] >> gpr[rs];
 			break;
 
 		case MIPS_SPEC_JR:
-			debug("jr\t%s\n", reg_names[rs]);
+			debug_in_asm("jr\t%s\n", reg_names[rs]);
 			next_pc = gpr[rs];
 			do_ds = true;
 			break;
 
 		case MIPS_SPEC_JALR:
 			if (rd == 31)
-				debug("jalr\t%s\n", reg_names[rs]);
+				debug_in_asm("jalr\t%s\n", reg_names[rs]);
 			else
-				debug("jalr\t%s, %s\n", reg_names[rd], reg_names[rs]);
+				debug_in_asm("jalr\t%s, %s\n", reg_names[rd], reg_names[rs]);
 			if (rd)
 				gpr[rd] = next_pc + 4;
 			next_pc = gpr[rs];
@@ -114,13 +114,13 @@ void frontend_interp(struct mips32_state *mips)
 			break;
 
 		case MIPS_SPEC_MOVZ:
-			debug("movz\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("movz\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd && !gpr[rt])
 				gpr[rd] = gpr[rs];
 			break;
 
 		case MIPS_SPEC_MOVN:
-			debug("movn\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("movn\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd && gpr[rt])
 				gpr[rd] = gpr[rs];
 			break;
@@ -128,52 +128,52 @@ void frontend_interp(struct mips32_state *mips)
 		case MIPS_SPEC_SYSCALL:
 			tgt = (inst >> 6) & 0xfffff;
 
-			debug("syscall");
+			debug_in_asm("syscall");
 			if (tgt)
-				debug("\t0x%x\n", tgt);
+				debug_in_asm("\t0x%x\n", tgt);
 			else
-				debug("\n");
+				debug_in_asm("\n");
 
 			frontend_syscall_invoke(&mips->sys, gpr[2]);
 			break;
 
 		case MIPS_SPEC_BREAK:
-			debug("break\n");
+			debug_in_asm("break\n");
 			/* TODO: exception */
 			sys_exit(1);
 			break;
 
 		case MIPS_SPEC_SYNC:
-			debug("sync\n");
+			debug_in_asm("sync\n");
 			break;
 
 		case MIPS_SPEC_MFHI:
-			debug("mfhi\t%s\n", reg_names[rd]);
+			debug_in_asm("mfhi\t%s\n", reg_names[rd]);
 			if (rd)
 				gpr[rd] = mips->cpu.hi;
 			break;
 
 		case MIPS_SPEC_MFLO:
-			debug("mflo\t%s\n", reg_names[rd]);
+			debug_in_asm("mflo\t%s\n", reg_names[rd]);
 			if (rd)
 				gpr[rd] = mips->cpu.lo;
 			break;
 
 		case MIPS_SPEC_MULTU:
-			debug("multu\t%s, %s\n", reg_names[rs], reg_names[rt]);
+			debug_in_asm("multu\t%s, %s\n", reg_names[rs], reg_names[rt]);
 			u64 = (uint64_t)gpr[rs] * gpr[rt];
 			mips->cpu.lo = u64;
 			mips->cpu.hi = u64 >> 32;
 			break;
 
 		case MIPS_SPEC_DIVU:
-			debug("divu\t%s, %s\n", reg_names[rs], reg_names[rt]);
+			debug_in_asm("divu\t%s, %s\n", reg_names[rs], reg_names[rt]);
 			mips->cpu.lo = gpr[rs] / gpr[rt];
 			mips->cpu.hi = gpr[rs] % gpr[rt];
 			break;
 
 		case MIPS_SPEC_ADD:
-			debug("add\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("add\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			/* TODO: overflow check */
 			if (rd)
 				gpr[rd] = gpr[rs] + gpr[rt];
@@ -181,66 +181,66 @@ void frontend_interp(struct mips32_state *mips)
 
 		case MIPS_SPEC_ADDU:
 			if (rt)
-				debug("addu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+				debug_in_asm("addu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			else
-				debug("move\t%s, %s\n", reg_names[rd], reg_names[rs]);
+				debug_in_asm("move\t%s, %s\n", reg_names[rd], reg_names[rs]);
 			if (rd)
 				gpr[rd] = gpr[rs] + gpr[rt];
 			break;
 
 		case MIPS_SPEC_SUBU:
 			if (rs)
-				debug("subu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+				debug_in_asm("subu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			else
-				debug("negu\t%s, %s\n", reg_names[rd], reg_names[rt]);
+				debug_in_asm("negu\t%s, %s\n", reg_names[rd], reg_names[rt]);
 
 			if (rd)
 				gpr[rd] = gpr[rs] - gpr[rt];
 			break;
 
 		case MIPS_SPEC_AND:
-			debug("and\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("and\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = gpr[rs] & gpr[rt];
 			break;
 
 		case MIPS_SPEC_OR:
-			debug("or\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("or\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = gpr[rs] | gpr[rt];
 			break;
 
 		case MIPS_SPEC_XOR:
-			debug("xor\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("xor\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = gpr[rs] ^ gpr[rt];
 			break;
 
 		case MIPS_SPEC_NOR:
-			debug("nor\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("nor\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = ~(gpr[rs] | gpr[rt]);
 			break;
 
 		case MIPS_SPEC_SLT:
-			debug("slt\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("slt\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = (int32_t)gpr[rs] < (int32_t)gpr[rt];
 			break;
 
 		case MIPS_SPEC_SLTU:
-			debug("sltu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("sltu\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = gpr[rs] < gpr[rt];
 			break;
 
 		case MIPS_SPEC_TEQ:
 			tgt = (inst >> 6) & 0x3ff;
-			debug("teq\t%s, %s", reg_names[rs], reg_names[rt]);
+			debug_in_asm("teq\t%s, %s", reg_names[rs], reg_names[rt]);
 			if (tgt)
-				debug(", 0x%x\n", tgt);
+				debug_in_asm(", 0x%x\n", tgt);
 			else
-				debug("\n");
+				debug_in_asm("\n");
 
 			if (gpr[rs] == gpr[rt]) {
 				/* TODO: exception */
@@ -258,7 +258,7 @@ void frontend_interp(struct mips32_state *mips)
 		switch (op) {
 		case MIPS_REGIMM_BLTZ:
 			tgt = next_pc + (simm << 2);
-			debug("bltz\t%s, 0x%x\n", reg_names[rs], tgt);
+			debug_in_asm("bltz\t%s, 0x%x\n", reg_names[rs], tgt);
 			if ((int32_t)gpr[rs] < 0) {
 				next_pc = tgt;
 				do_ds = true;
@@ -267,7 +267,7 @@ void frontend_interp(struct mips32_state *mips)
 
 		case MIPS_REGIMM_BGEZ:
 			tgt = next_pc + (simm << 2);
-			debug("bgez\t%s, 0x%x\n", reg_names[rs], tgt);
+			debug_in_asm("bgez\t%s, 0x%x\n", reg_names[rs], tgt);
 			if ((int32_t)gpr[rs] >= 0) {
 				next_pc = tgt;
 				do_ds = true;
@@ -276,7 +276,7 @@ void frontend_interp(struct mips32_state *mips)
 
 		case MIPS_REGIMM_BLTZAL:
 			tgt = next_pc + (simm << 2);
-			debug("bltzal\t%s, 0x%x\n", reg_names[rs], tgt);
+			debug_in_asm("bltzal\t%s, 0x%x\n", reg_names[rs], tgt);
 			gpr[31] = next_pc + 4;
 			if ((int32_t)gpr[rs] < 0) {
 				next_pc = tgt;
@@ -287,9 +287,9 @@ void frontend_interp(struct mips32_state *mips)
 		case MIPS_REGIMM_BGEZAL:
 			tgt = next_pc + (simm << 2);
 			if (rs == 0)
-				debug("bal\t0x%x\n", tgt);
+				debug_in_asm("bal\t0x%x\n", tgt);
 			else
-				debug("bgezal\t%s, 0x%x\n", reg_names[rs], tgt);
+				debug_in_asm("bgezal\t%s, 0x%x\n", reg_names[rs], tgt);
 			gpr[31] = next_pc + 4;
 			if ((int32_t)gpr[rs] >= 0) {
 				next_pc = tgt;
@@ -306,7 +306,7 @@ void frontend_interp(struct mips32_state *mips)
 		next_pc &= ~((1 << 28) - 1);
 		next_pc |= (inst & 0x3ffffff) << 2;
 
-		debug("j\t0x%x\n", next_pc);
+		debug_in_asm("j\t0x%x\n", next_pc);
 
 		do_ds = true;
 		break;
@@ -317,7 +317,7 @@ void frontend_interp(struct mips32_state *mips)
 		next_pc &= ~((1 << 28) - 1);
 		next_pc |= (inst & 0x3ffffff) << 2;
 
-		debug("jal\t0x%x\n", next_pc);
+		debug_in_asm("jal\t0x%x\n", next_pc);
 
 		do_ds = true;
 		break;
@@ -326,10 +326,10 @@ void frontend_interp(struct mips32_state *mips)
 		tgt = next_pc + (simm << 2);
 
 		if (rt)
-			debug("beq\t%s, %s", reg_names[rs], reg_names[rt]);
+			debug_in_asm("beq\t%s, %s", reg_names[rs], reg_names[rt]);
 		else
-			debug("beqz\t%s", reg_names[rs]);
-		debug(", 0x%x\n", tgt);
+			debug_in_asm("beqz\t%s", reg_names[rs]);
+		debug_in_asm(", 0x%x\n", tgt);
 
 		if (gpr[rs] == gpr[rt]) {
 			next_pc = tgt;
@@ -341,10 +341,10 @@ void frontend_interp(struct mips32_state *mips)
 		tgt = next_pc + (simm << 2);
 
 		if (rt)
-			debug("bne\t%s, %s", reg_names[rs], reg_names[rt]);
+			debug_in_asm("bne\t%s, %s", reg_names[rs], reg_names[rt]);
 		else
-			debug("bnez\t%s", reg_names[rs]);
-		debug(", 0x%x\n", tgt);
+			debug_in_asm("bnez\t%s", reg_names[rs]);
+		debug_in_asm(", 0x%x\n", tgt);
 
 		if (gpr[rs] != gpr[rt]) {
 			next_pc = tgt;
@@ -354,7 +354,7 @@ void frontend_interp(struct mips32_state *mips)
 
 	case MIPS_OP_BLEZ:
 		tgt = next_pc + (simm << 2);
-		debug("blez\t%s, 0x%x\n", reg_names[rs], tgt);
+		debug_in_asm("blez\t%s, 0x%x\n", reg_names[rs], tgt);
 
 		if ((int32_t)gpr[rs] <= 0) {
 			next_pc = tgt;
@@ -364,7 +364,7 @@ void frontend_interp(struct mips32_state *mips)
 
 	case MIPS_OP_BGTZ:
 		tgt = next_pc + (simm << 2);
-		debug("bgtz\t%s, 0x%x\n", reg_names[rs], tgt);
+		debug_in_asm("bgtz\t%s, 0x%x\n", reg_names[rs], tgt);
 
 		if ((int32_t)gpr[rs] > 0) {
 			next_pc = tgt;
@@ -374,47 +374,47 @@ void frontend_interp(struct mips32_state *mips)
 
 	case MIPS_OP_ADDIU:
 		if (rs)
-			debug("addiu\t%s, %s", reg_names[rt], reg_names[rs]);
+			debug_in_asm("addiu\t%s, %s", reg_names[rt], reg_names[rs]);
 		else
-			debug("li\t%s", reg_names[rt]);
-		debug(", %d\n", simm);
+			debug_in_asm("li\t%s", reg_names[rt]);
+		debug_in_asm(", %d\n", simm);
 
 		if (rt)
 			gpr[rt] = gpr[rs] + simm;
 		break;
 
 	case MIPS_OP_SLTI:
-		debug("slti\t%s, %s, %d\n", reg_names[rt], reg_names[rs], simm);
+		debug_in_asm("slti\t%s, %s, %d\n", reg_names[rt], reg_names[rs], simm);
 		if (rt)
 			gpr[rt] = (int32_t)gpr[rs] < simm;
 		break;
 
 	case MIPS_OP_SLTIU:
-		debug("sltiu\t%s, %s, %d\n", reg_names[rt], reg_names[rs], simm);
+		debug_in_asm("sltiu\t%s, %s, %d\n", reg_names[rt], reg_names[rs], simm);
 		if (rt)
 			gpr[rt] = gpr[rs] < (uint32_t)simm;
 		break;
 
 	case MIPS_OP_ANDI:
-		debug("andi\t%s, %s, 0x%x\n", reg_names[rt], reg_names[rs], imm);
+		debug_in_asm("andi\t%s, %s, 0x%x\n", reg_names[rt], reg_names[rs], imm);
 		if (rt)
 			gpr[rt] = gpr[rs] & imm;
 		break;
 
 	case MIPS_OP_ORI:
-		debug("ori\t%s, %s, 0x%x\n", reg_names[rt], reg_names[rs], imm);
+		debug_in_asm("ori\t%s, %s, 0x%x\n", reg_names[rt], reg_names[rs], imm);
 		if (rt)
 			gpr[rt] = gpr[rs] | imm;
 		break;
 
 	case MIPS_OP_XORI:
-		debug("xori\t%s, %s, 0x%x\n", reg_names[rt], reg_names[rs], imm);
+		debug_in_asm("xori\t%s, %s, 0x%x\n", reg_names[rt], reg_names[rs], imm);
 		if (rt)
 			gpr[rt] = gpr[rs] ^ imm;
 		break;
 
 	case MIPS_OP_LUI:
-		debug("lui\t%s, 0x%x\n", reg_names[rt], imm);
+		debug_in_asm("lui\t%s, 0x%x\n", reg_names[rt], imm);
 
 		if (rt)
 			gpr[rt] = imm << 16;
@@ -424,13 +424,13 @@ void frontend_interp(struct mips32_state *mips)
 		op = inst & 0x3f;
 		switch (op) {
 		case MIPS_SPEC2_MUL:
-			debug("mul\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
+			debug_in_asm("mul\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			if (rd)
 				gpr[rd] = gpr[rs] * gpr[rt];
 			break;
 
 		case MIPS_SPEC2_CLZ:
-			debug("clz\t%s, %s\n", reg_names[rd], reg_names[rs]);
+			debug_in_asm("clz\t%s, %s\n", reg_names[rd], reg_names[rs]);
 			if (rd)
 				gpr[rd] = gpr[rs] ? __builtin_clz(gpr[rs]) : 32;
 			break;
@@ -446,7 +446,7 @@ void frontend_interp(struct mips32_state *mips)
 		case MIPS_SPEC3_EXT:
 			sz = ((inst >> 11) & 0x1f) + 1;
 			lsb = (inst >> 6) & 0x1f;
-			debug("ext\t%s, %s, 0x%x, 0x%x\n", reg_names[rt], reg_names[rs], lsb, sz);
+			debug_in_asm("ext\t%s, %s, 0x%x, 0x%x\n", reg_names[rt], reg_names[rs], lsb, sz);
 			if (rt)
 				gpr[rt] = (gpr[rs] >> lsb) & ((1 << sz) - 1);
 			break;
@@ -455,7 +455,7 @@ void frontend_interp(struct mips32_state *mips)
 			msb = (inst >> 11) & 0x1f;
 			lsb = (inst >> 6) & 0x1f;
 			sz = msb + 1 - lsb;
-			debug("ins\t%s, %s, 0x%x, 0x%x\n", reg_names[rt], reg_names[rs], lsb, sz);
+			debug_in_asm("ins\t%s, %s, 0x%x, 0x%x\n", reg_names[rt], reg_names[rs], lsb, sz);
 			if (rt) {
 				gpr[rt] &= ~(((1 << sz) - 1) << lsb);
 				gpr[rt] |= (gpr[rs] & ((1 << sz) - 1)) << lsb;
@@ -466,13 +466,13 @@ void frontend_interp(struct mips32_state *mips)
 			op = (inst >> 6) & 0x1f;
 			switch (op) {
 			case MIPS_BSHFL_SEB:
-				debug("seb\t%s, %s\n", reg_names[rd], reg_names[rt]);
+				debug_in_asm("seb\t%s, %s\n", reg_names[rd], reg_names[rt]);
 				if (rd)
 					gpr[rd] = se8(gpr[rt]);
 				break;
 
 			case MIPS_BSHFL_SEH:
-				debug("seh\t%s, %s\n", reg_names[rd], reg_names[rt]);
+				debug_in_asm("seh\t%s, %s\n", reg_names[rd], reg_names[rt]);
 				if (rd)
 					gpr[rd] = se16(gpr[rt]);
 				break;
@@ -483,7 +483,7 @@ void frontend_interp(struct mips32_state *mips)
 			break;
 
 		case MIPS_SPEC3_RDHWR:
-			debug("rdhwr\t%s, $%u\n", reg_names[rt], rd);
+			debug_in_asm("rdhwr\t%s, $%u\n", reg_names[rt], rd);
 			if (rt)
 				gpr[rt] = frontend_rdhwr(mips, rd);
 			break;
@@ -494,7 +494,7 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_LB:
-		debug("lb\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("lb\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -503,7 +503,7 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_LWL:
-		debug("lwl\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("lwl\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -512,7 +512,7 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_LW:
-		debug("lw\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("lw\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -521,7 +521,7 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_LBU:
-		debug("lbu\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("lbu\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -530,7 +530,7 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_LHU:
-		debug("lhu\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("lhu\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -539,7 +539,7 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_LWR:
-		debug("lwr\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("lwr\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -549,38 +549,38 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_SB:
-		debug("sb\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("sb\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		*(uint8_t *)ptr = gpr[rt];
 		break;
 
 	case MIPS_OP_SH:
-		debug("sh\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("sh\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		*(uint16_t *)ptr = gpr[rt];
 		break;
 
 	case MIPS_OP_SWL:
-		debug("swl\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("swl\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		/* TODO: FIXME! */
 		break;
 
 	case MIPS_OP_SW:
-		debug("sw\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("sw\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		*(uint32_t *)ptr = gpr[rt];
 		break;
 
 	case MIPS_OP_SWR:
-		debug("swr\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("swr\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		/* TODO: FIXME! */
 		*(uint32_t *)ptr = gpr[rt];
 		break;
 
 	case MIPS_OP_LL:
-		debug("ll\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("ll\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 
 		if (rt) {
 			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -590,17 +590,17 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_PREF:
-		debug("pref\t0x%x, %d(%s)\n", rt, simm, reg_names[rs]);
+		debug_in_asm("pref\t0x%x, %d(%s)\n", rt, simm, reg_names[rs]);
 		break;
 
 	case MIPS_OP_LDC1:
-		debug("ldc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("ldc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		fpr[rt] = *(uint64_t *)ptr;
 		break;
 
 	case MIPS_OP_SC:
-		debug("sc\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("sc\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		/* TODO: atomics! */
 		*(uint32_t *)ptr = gpr[rt];
@@ -608,14 +608,14 @@ void frontend_interp(struct mips32_state *mips)
 		break;
 
 	case MIPS_OP_SDC1:
-		debug("sdc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		debug_in_asm("sdc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 		ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 		*(uint64_t *)ptr = fpr[rt];
 		break;
 
 	default:
 	ri:
-		debug("reserved instruction\n");
+		debug("reserved instruction 0x%08x\n", inst);
 		sys_exit(1);
 	}
 

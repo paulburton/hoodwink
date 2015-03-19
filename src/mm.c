@@ -64,10 +64,8 @@ static int mm_pages_avail(struct sys_state *sys, unsigned pfn_start, unsigned pf
 	unsigned pfn;
 
 	for (pfn = pfn_start; pfn <= pfn_end; pfn++) {
-		if (!mm_page_avail(sys, pfn)) {
-			debug("page %u unavailable!\n", pfn);
+		if (!mm_page_avail(sys, pfn))
 			return 0;
-		}
 	}
 
 	return 1;
@@ -88,12 +86,8 @@ static uint32_t mm_region_find(struct sys_state *sys, uint32_t length)
 	page_span = (length - 1) >> sys->page_bits;
 
 	for (pfn = sys->mmap_pfn_min; pfn <= sys->mmap_pfn_max; pfn++) {
-		debug("mmap try pages %u-%u...", pfn, pfn + page_span);
-		if (mm_pages_avail(sys, pfn, pfn + page_span)) {
-			debug(" ok!\n");
+		if (mm_pages_avail(sys, pfn, pfn + page_span))
 			return pfn << sys->page_bits;
-		}
-		debug(" nope...\n");
 	}
 
 	return 0;
