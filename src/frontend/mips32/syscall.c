@@ -34,7 +34,7 @@ static uint32_t translate_sys_set_thread_area(struct sys_state *sys, uint32_t *a
 }
 
 static const struct syscall_info info_set_thread_area = {
-	SYSCALL_NAME(set_thread_area)
+	SYSCALL_NAME("set_thread_area")
 	.nargs = 1,
 	.translate = translate_sys_set_thread_area,
 };

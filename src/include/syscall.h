@@ -42,7 +42,7 @@ struct syscall_info {
 };
 
 #ifdef DEBUG
-# define SYSCALL_NAME(n) .name = #n,
+# define SYSCALL_NAME(n) .name = n,
 #else
 # define SYSCALL_NAME(n)
 #endif
