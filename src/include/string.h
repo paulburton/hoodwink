@@ -19,6 +19,16 @@ static inline int strcmp(const char *s1, const char *s2)
 	return 0;
 }
 
+static inline char *strcpy(char *dest, const char *src)
+{
+	char *dest_ch = dest;
+
+	while (*src)
+		*dest_ch++ = *src++;
+
+	return dest;
+}
+
 static inline size_t strlen(const char *str)
 {
 	size_t len = 0;

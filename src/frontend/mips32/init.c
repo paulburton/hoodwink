@@ -34,13 +34,13 @@ static uint32_t push_aux(struct mips32_state *mips, uint32_t type, uint32_t val)
 	return push_u32(mips, type);
 }
 
-void frontend_init(const char *filename)
+void frontend_init(const char *filename, int argc, const char *argv[])
 {
 	struct mips32_state mips;
 	struct elf_load_info elf_info;
 	unsigned stack_sz;
-	int err, prot;
-	uint32_t argv[2];
+	int err, prot, i, new_argc;
+	uint32_t argv_addrs[argc + 1];
 	uint32_t envp[1];
 
 	memset(&mips, 0, sizeof(mips));
@@ -67,13 +67,16 @@ void frontend_init(const char *filename)
 		sys_exit(1);
 	}
 
-	argv[0] = push_string(&mips, filename);
-	argv[1] = push_string(&mips, "test_argv1");
-
-	envp[0] = push_string(&mips, "LD_DEBUG=all");
-
 	mips.cpu.pc = elf_load_filename(&mips.sys, filename, 0, &elf_info);
 	mips.sys.min_brk = mips.sys.brk;
+
+	envp[0] = push_string(&mips, "TEST=test");
+
+	new_argc = 0;
+	if (elf_info.interp_filename[0])
+		argv_addrs[new_argc++] = push_string(&mips, elf_info.interp_filename);
+	for (i = 0; i < argc; i++)
+		argv_addrs[new_argc++] = push_string(&mips, argv[i]);
 
 	push_aux(&mips, AT_NULL, 0);
 	push_aux(&mips, AT_PAGESZ, 4 << 10);
@@ -89,11 +92,11 @@ void frontend_init(const char *filename)
 
 	/* argv */
 	push_u32(&mips, 0);
-	push_u32(&mips, argv[0]);
-	push_u32(&mips, argv[1]);
+	for (i = new_argc - 1; i >= 0; i--)
+		push_u32(&mips, argv_addrs[i]);
 
 	/* argc */
-	push_u32(&mips, 2);
+	push_u32(&mips, new_argc);
 
 	while (1)
 		frontend_interp(&mips);

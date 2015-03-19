@@ -16,6 +16,7 @@ struct elf_load_info {
 	uint32_t phdr_base;
 	unsigned phent;
 	unsigned phnum;
+	char interp_filename[256];
 };
 
 extern uint32_t elf_load(struct sys_state *sys, void *base, int flags, struct elf_load_info *info);

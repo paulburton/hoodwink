@@ -30,6 +30,7 @@ uint32_t elf_load(struct sys_state *sys, void *base, int flags, struct elf_load_
 	if (info && !(flags & ELF_INTERP)) {
 		info->phent = ehdr->e_phentsize;
 		info->phnum = ehdr->e_phnum;
+		info->interp_filename[0] = 0;
 	}
 
 	entry = ehdr->e_entry;
@@ -88,8 +89,11 @@ uint32_t elf_load(struct sys_state *sys, void *base, int flags, struct elf_load_
 			}
 		}
 
-		if (phdr->p_type == PT_INTERP)
+		if (phdr->p_type == PT_INTERP) {
 			interp_filename = base + phdr->p_offset;
+			if (info)
+				strcpy(info->interp_filename, interp_filename);
+		}
 	}
 
 	if (!(flags & ELF_INTERP) && interp_filename) {
