@@ -2,6 +2,7 @@
 #include "elf.h"
 #include "mips32.h"
 #include "mm.h"
+#include "signals.h"
 #include "string.h"
 #include "sys.h"
 #include "syscall.h"
@@ -54,6 +55,7 @@ void frontend_init(const char *filename)
 
 	mips.sys.page_bits = 12;
 	mm_init(&mips.sys);
+	signals_init(&mips.sys);
 
 	stack_sz = 128 << 10;
 	prot = PROT_READ | PROT_WRITE | PROT_EXEC;

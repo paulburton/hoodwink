@@ -34,10 +34,12 @@
 	typedef arch##_mode_t			prefix##mode_t;		\
 	typedef arch##_off_t			prefix##off_t;		\
 	typedef arch##_pid_t			prefix##pid_t;		\
+	typedef arch##_sigset_t			prefix##sigset_t;	\
 	typedef arch##_size_t			prefix##size_t;		\
 	typedef arch##_ssize_t			prefix##ssize_t;	\
 	typedef arch##_uid_t			prefix##uid_t;		\
 	typedef struct arch##_iovec		prefix##iovec_s;	\
+	typedef struct arch##_sigaction		prefix##sigaction_s;	\
 	typedef struct arch##_stat		prefix##stat_s;		\
 	typedef struct arch##_stat64		prefix##stat64_s;	\
 	typedef struct arch##_utsname		prefix##utsname_s;
@@ -57,7 +59,10 @@
 	static const int prefix##PROT_NONE = arch##_PROT_NONE;		\
 	static const int prefix##PROT_EXEC = arch##_PROT_EXEC;		\
 	static const int prefix##PROT_READ = arch##_PROT_READ;		\
-	static const int prefix##PROT_WRITE = arch##_PROT_WRITE;
+	static const int prefix##PROT_WRITE = arch##_PROT_WRITE;	\
+	static const int prefix##SA_RESTORER = arch##_SA_RESTORER;	\
+	static const int prefix##SA_SIGINFO = arch##_SA_SIGINFO;	\
+	static const int prefix##SIGSEGV = arch##_SIGSEGV;
 
 #ifdef FRONT_ARCH_MIPS32
 DECLARE_TYPEDEFS(mips32, front_)

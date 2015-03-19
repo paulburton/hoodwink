@@ -9,6 +9,7 @@ typedef int32_t		mips32_gid_t;
 typedef uint16_t	mips32_mode_t;
 typedef uint32_t	mips32_off_t;
 typedef int32_t		mips32_pid_t;
+typedef uint32_t	mips32_sigset_t;
 typedef uint32_t	mips32_size_t;
 typedef int32_t		mips32_ssize_t;
 typedef int32_t		mips32_time_t;
@@ -17,6 +18,13 @@ typedef int32_t		mips32_uid_t;
 struct mips32_iovec {
 	uint32_t	iov_base;
 	uint32_t	iov_len;
+};
+
+struct mips32_sigaction {
+	uint32_t	sa_handler;
+	uint32_t	sa_flags;
+	uint32_t	sa_restorer;
+	mips32_sigset_t	sa_mask;
 };
 
 struct mips32_stat {
@@ -72,5 +80,10 @@ struct mips32_utsname {
 #define MIPS32_PROT_READ	0x1
 #define MIPS32_PROT_WRITE	0x2
 #define MIPS32_PROT_EXEC	0x4
+
+#define MIPS32_SA_SIGINFO	0x00000004
+#define MIPS32_SA_RESTORER	0x04000000
+
+#define MIPS32_SIGSEGV		11
 
 #endif /* __hoodwink_mips32_types_h__ */

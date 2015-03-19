@@ -20,6 +20,7 @@ c_source := \
 	src/elf.c \
 	src/main.c \
 	src/mm.c \
+	src/signals.c \
 	src/syscall.c
 
 ifeq ($(DEBUG),1)

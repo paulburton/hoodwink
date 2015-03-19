@@ -9,6 +9,7 @@ typedef uint32_t	x86_64_gid_t;
 typedef uint32_t	x86_64_mode_t;
 typedef uint64_t	x86_64_off_t;
 typedef int32_t		x86_64_pid_t;
+typedef uint64_t	x86_64_sigset_t;
 typedef uint64_t	x86_64_size_t;
 typedef int64_t		x86_64_ssize_t;
 typedef uint32_t	x86_64_uid_t;
@@ -16,6 +17,13 @@ typedef uint32_t	x86_64_uid_t;
 struct x86_64_iovec {
 	uint64_t	iov_base;
 	uint64_t	iov_len;
+};
+
+struct x86_64_sigaction {
+	uint64_t	sa_handler;
+	uint64_t	sa_flags;
+	uint64_t	sa_restorer;
+	x86_64_sigset_t	sa_mask;
 };
 
 struct x86_64_stat {
@@ -71,5 +79,10 @@ struct x86_64_utsname {
 #define X86_64_PROT_READ	0x1
 #define X86_64_PROT_WRITE	0x2
 #define X86_64_PROT_EXEC	0x4
+
+#define X86_64_SA_SIGINFO	0x00000004
+#define X86_64_SA_RESTORER	0x04000000
+
+#define X86_64_SIGSEGV		11
 
 #endif /* __hoodwink_x86_64_types_h__ */
