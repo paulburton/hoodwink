@@ -15,6 +15,7 @@ local_c_source := \
 	getpid.c \
 	getuid.c \
 	lseek.c \
+	lstat64.c \
 	mmap.c \
 	mprotect.c \
 	open.c \
