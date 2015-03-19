@@ -502,6 +502,15 @@ void frontend_interp(struct mips32_state *mips)
 		}
 		break;
 
+	case MIPS_OP_LH:
+		debug_in_asm("lh\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+
+		if (rt) {
+			ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
+			gpr[rt] = se16(*(uint16_t *)ptr);
+		}
+		break;
+
 	case MIPS_OP_LWL:
 		debug_in_asm("lwl\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
 

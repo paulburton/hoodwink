@@ -34,6 +34,7 @@ enum mips_op {
 	MIPS_OP_SPEC2		= 0x1c,
 	MIPS_OP_SPEC3		= 0x1f,
 	MIPS_OP_LB		= 0x20,
+	MIPS_OP_LH		= 0x21,
 	MIPS_OP_LWL		= 0x22,
 	MIPS_OP_LW		= 0x23,
 	MIPS_OP_LBU		= 0x24,
