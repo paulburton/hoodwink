@@ -328,6 +328,7 @@
 
 /* dummies */
 #define X86_64_NR_fstat64	-1
+#define X86_64_NR_mmap2		-1
 #define X86_64_NR_stat64	-1
 
 #endif /* __hoodwink_x86_64_syscall_h__ */
