@@ -2,6 +2,7 @@
 # error Define SYSCALL before inclusion
 #endif
 
+SYSCALL(access, int, const char *pathname, int mode)
 SYSCALL(brk, int, void *addr)
 SYSCALL(close, int, int fd)
 SYSCALL(exit, void, int status)

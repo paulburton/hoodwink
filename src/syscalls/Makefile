@@ -1,6 +1,7 @@
 local_dir := src/syscalls
 
 local_c_source := \
+	access.c \
 	brk.c \
 	close.c \
 	exit.c \
