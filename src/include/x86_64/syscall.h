@@ -332,4 +332,11 @@
 #define X86_64_NR_mmap2		-1
 #define X86_64_NR_stat64	-1
 
+#ifndef __ASSEMBLER__
+
+extern long sys_clone(unsigned long clone_flags, unsigned long newsp,
+		      int *parent_tidptr, int *child_tidptr, int tls_val);
+
+#endif /* !__ASSEMBLER__ */
+
 #endif /* __hoodwink_x86_64_syscall_h__ */

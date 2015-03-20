@@ -16,3 +16,5 @@ sys_##name:					\
 .endif;
 
 #include "syscall-list.h"
+
+SYSCALL(clone, long, unsigned long clone_flags, unsigned long newsp, int *parent_tidptr, int *child_tidptr, int tls_val)
