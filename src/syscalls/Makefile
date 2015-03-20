@@ -24,6 +24,7 @@ local_c_source := \
 	open.c \
 	read.c \
 	readlink.c \
+	tgkill.c \
 	uname.c \
 	waitpid.c \
 	write.c
