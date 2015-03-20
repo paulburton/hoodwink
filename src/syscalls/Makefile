@@ -15,6 +15,7 @@ local_c_source := \
 	getgid.c \
 	getpgrp.c \
 	getpid.c \
+	getppid.c \
 	getuid.c \
 	lseek.c \
 	lstat64.c \
