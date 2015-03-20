@@ -24,6 +24,7 @@ local_c_source := \
 	read.c \
 	readlink.c \
 	uname.c \
+	waitpid.c \
 	write.c
 
 c_source += $(addprefix $(local_dir)/,$(local_c_source))
