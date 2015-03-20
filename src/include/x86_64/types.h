@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 typedef int32_t		x86_64_int_t;
+typedef int64_t		x86_64_long_t;
+typedef uint64_t	x86_64_ulong_t;
 
 typedef uint32_t	x86_64_gid_t;
 typedef uint32_t	x86_64_mode_t;
@@ -12,6 +14,7 @@ typedef int32_t		x86_64_pid_t;
 typedef uint64_t	x86_64_sigset_t;
 typedef uint64_t	x86_64_size_t;
 typedef int64_t		x86_64_ssize_t;
+typedef uint64_t	x86_64_time_t;
 typedef uint32_t	x86_64_uid_t;
 
 struct x86_64_iovec {
@@ -49,6 +52,11 @@ struct x86_64_stat {
 
 struct x86_64_stat64 {
 	/* dummy */
+};
+
+struct x86_64_timespec {
+	x86_64_time_t	tv_sec;
+	x86_64_long_t	tv_nsec;
 };
 
 struct x86_64_utsname {

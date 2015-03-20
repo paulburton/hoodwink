@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 typedef int32_t		mips32_int_t;
+typedef int32_t		mips32_long_t;
+typedef uint32_t	mips32_ulong_t;
 
 typedef int32_t		mips32_gid_t;
 typedef uint16_t	mips32_mode_t;
@@ -51,6 +53,11 @@ struct mips32_stat64 {
 	uint32_t	st_blksize;
 	uint32_t	st_pad2;
 	uint64_t	st_blocks;
+};
+
+struct mips32_timespec {
+	mips32_time_t	tv_sec;
+	mips32_long_t	tv_nsec;
 };
 
 struct mips32_utsname {

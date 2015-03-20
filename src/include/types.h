@@ -37,6 +37,7 @@
 #define DECLARE_TYPEDEFS(arch, prefix)					\
 	typedef arch##_int_t			prefix##int_t;		\
 	typedef arch##_gid_t			prefix##gid_t;		\
+	typedef arch##_long_t			prefix##long_t;		\
 	typedef arch##_mode_t			prefix##mode_t;		\
 	typedef arch##_off_t			prefix##off_t;		\
 	typedef arch##_pid_t			prefix##pid_t;		\
@@ -44,10 +45,12 @@
 	typedef arch##_size_t			prefix##size_t;		\
 	typedef arch##_ssize_t			prefix##ssize_t;	\
 	typedef arch##_uid_t			prefix##uid_t;		\
+	typedef arch##_ulong_t			prefix##ulong_t;	\
 	typedef struct arch##_iovec		prefix##iovec_s;	\
 	typedef struct arch##_sigaction		prefix##sigaction_s;	\
 	typedef struct arch##_stat		prefix##stat_s;		\
 	typedef struct arch##_stat64		prefix##stat64_s;	\
+	typedef struct arch##_timespec		prefix##timespec_s;	\
 	typedef struct arch##_utsname		prefix##utsname_s;
 
 #define DECLARE_CONSTANTS(arch, prefix)					\

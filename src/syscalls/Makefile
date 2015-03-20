@@ -8,6 +8,7 @@ local_c_source := \
 	exit_group.c \
 	fork.c \
 	fstat64.c \
+	futex.c \
 	getcwd.c \
 	getegid.c \
 	geteuid.c \
