@@ -70,14 +70,14 @@
 	static const int prefix##SA_SIGINFO = arch##_SA_SIGINFO;	\
 	static const int prefix##SIGSEGV = arch##_SIGSEGV;
 
-#ifdef FRONT_ARCH_MIPS32
-DECLARE_TYPEDEFS(mips32, front_)
-DECLARE_CONSTANTS(MIPS32, FRONT_)
-#endif
-
 #ifdef BACK_ARCH_X86_64
 DECLARE_TYPEDEFS(x86_64,)
 DECLARE_CONSTANTS(X86_64,)
+#endif
+
+#ifdef FRONT_ARCH_MIPS32
+DECLARE_TYPEDEFS(mips32, front_)
+DECLARE_CONSTANTS(MIPS32, FRONT_)
 #endif
 
 #define _____GEN_FLAG_TRANSLATOR(flag)					\
@@ -85,19 +85,19 @@ DECLARE_CONSTANTS(X86_64,)
 		b |= flag;						\
 	handled |= FRONT_##flag;
 
-#define ____GEN_FLAG_TRANSLATOR0(a,b,c,d)
+#define ____GEN_FLAG_TRANSLATOR0()
 
-#define ____GEN_FLAG_TRANSLATOR1(a,b,c,d)				\
-	_____GEN_FLAG_TRANSLATOR(d)
+#define ____GEN_FLAG_TRANSLATOR1(a)					\
+	_____GEN_FLAG_TRANSLATOR(a)
 
-#define ____GEN_FLAG_TRANSLATOR2(a,b,c,d)				\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)
+#define ____GEN_FLAG_TRANSLATOR2(a)					\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)
 
-#define ____GEN_FLAG_TRANSLATOR3(a,b,c,d)				\
+#define ____GEN_FLAG_TRANSLATOR3(a,b,c)					\
+	_____GEN_FLAG_TRANSLATOR(a)					\
 	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)
+	_____GEN_FLAG_TRANSLATOR(c)
 
 #define ____GEN_FLAG_TRANSLATOR4(a,b,c,d)				\
 	_____GEN_FLAG_TRANSLATOR(a)					\
