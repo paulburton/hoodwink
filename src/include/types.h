@@ -100,6 +100,7 @@
 	typedef arch##_sigset_t			prefix##sigset_t;	\
 	typedef arch##_size_t			prefix##size_t;		\
 	typedef arch##_ssize_t			prefix##ssize_t;	\
+	typedef arch##_time_t			prefix##time_t;		\
 	typedef arch##_uid_t			prefix##uid_t;		\
 	typedef arch##_ulong_t			prefix##ulong_t;	\
 	typedef struct arch##_iovec		prefix##iovec_s;	\

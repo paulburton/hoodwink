@@ -34,6 +34,7 @@ SYSCALL(rt_sigaction, int, int signum, const sigaction_s *act, sigaction_s *olda
 SYSCALL(stat, int, const char *filename, stat_s *buf)
 SYSCALL(stat64, int, const char *filename, stat64_s *buf)
 SYSCALL(tgkill, int, int tgid, int tid, int sig)
+SYSCALL(time, time_t, time_t *t)
 SYSCALL(uname, int, utsname_s *buf)
 SYSCALL(wait4, pid_t, pid_t pid, int *status, int options, void *rusage)
 SYSCALL(waitpid, pid_t, pid_t pid, int *status, int options)
