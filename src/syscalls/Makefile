@@ -26,6 +26,7 @@ local_c_source := \
 	read.c \
 	readlink.c \
 	rt_sigaction.c \
+	socket.c \
 	tgkill.c \
 	time.c \
 	uname.c \
