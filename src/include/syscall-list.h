@@ -32,6 +32,7 @@ SYSCALL(mmap2, void *, void *addr, size_t length, int prot, int flags, int fd, o
 SYSCALL(mprotect, int, void *addr, size_t len, int prot)
 SYSCALL(munmap, int, void *addr, size_t length)
 SYSCALL(open, int, const char *pathname, int flags, mode_t mode)
+SYSCALL(openat, int, int dirfd, const char *pathname, int flags, mode_t mode)
 SYSCALL(read, ssize_t, int fd, void *buf, size_t count)
 SYSCALL(readlink, size_t, const char *pathname, char *buf, size_t bufsiz)
 SYSCALL(rt_sigaction, int, int signum, const sigaction_s *act, sigaction_s *oldact, size_t sigsetsize)
