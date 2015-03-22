@@ -9,6 +9,7 @@ typedef uint32_t	mips32_ulong_t;
 
 typedef int32_t		mips32_clock_t;
 typedef int32_t		mips32_gid_t;
+typedef uint32_t	mips32_loff_t;
 typedef uint16_t	mips32_mode_t;
 typedef uint32_t	mips32_off_t;
 typedef int32_t		mips32_pid_t;

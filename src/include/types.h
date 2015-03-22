@@ -93,6 +93,7 @@
 #define DECLARE_TYPEDEFS(arch, prefix)					\
 	typedef arch##_int_t			prefix##int_t;		\
 	typedef arch##_gid_t			prefix##gid_t;		\
+	typedef arch##_loff_t			prefix##loff_t;		\
 	typedef arch##_long_t			prefix##long_t;		\
 	typedef arch##_mode_t			prefix##mode_t;		\
 	typedef arch##_off_t			prefix##off_t;		\

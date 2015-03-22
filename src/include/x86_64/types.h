@@ -8,6 +8,7 @@ typedef int64_t		x86_64_long_t;
 typedef uint64_t	x86_64_ulong_t;
 
 typedef uint32_t	x86_64_gid_t;
+typedef uint64_t	x86_64_loff_t;
 typedef uint32_t	x86_64_mode_t;
 typedef uint64_t	x86_64_off_t;
 typedef int32_t		x86_64_pid_t;

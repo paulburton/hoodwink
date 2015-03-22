@@ -2,6 +2,7 @@
 # error Define SYSCALL before inclusion
 #endif
 
+SYSCALL(_llseek, int, int fd, unsigned long offset_high, unsigned long offset_low, loff_t *result, unsigned int whence)
 SYSCALL(access, int, const char *pathname, int mode)
 SYSCALL(brk, int, void *addr)
 SYSCALL(close, int, int fd)
