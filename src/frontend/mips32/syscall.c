@@ -5,7 +5,7 @@
 #include "syscall.h"
 #include "util.h"
 
-void frontend_syscall_args(struct sys_state *sys, unsigned nargs, uint32_t *args)
+void frontend_syscall_args(const struct sys_state *sys, unsigned nargs, uint32_t *args)
 {
 	struct mips32_state *mips = (struct mips32_state *)sys;
 	int i;
@@ -19,31 +19,23 @@ void frontend_syscall_args(struct sys_state *sys, unsigned nargs, uint32_t *args
 		args[i] = ((uint32_t *)(mips->sys.mem_base + mips->cpu.gpr[29]))[i];
 }
 
-void frontend_syscall_ret(struct sys_state *sys, uint32_t ret)
+static uint32_t translate_sys_clone(const struct sys_state *sys, uint32_t *args, void *_delta)
 {
-	struct mips32_state *mips = (struct mips32_state *)sys;
+	int *parent_tidptr, *child_tidptr;
+	int signum_ok;
+	unsigned long flags;
 
-	mips->cpu.gpr[2] = ret;
-	mips->cpu.gpr[7] = IS_ERROR(ret);
-}
+	flags = args[0] & ~0xfful;
+	flags |= f2b_signum(args[0] & 0xff, &signum_ok);
+	if (!signum_ok) {
+		debug("Unrecognised signal number %d\n", args[0] & 0xff);
+		return -FRONT_EINVAL;
+	}
 
-static uint32_t translate_sys_clone(struct sys_state *sys, uint32_t *args)
-{
-	int parent_tid, *parent_tidptr;
-	int child_tid, *child_tidptr;
-	long ret;
+	parent_tidptr = args[2] ? sys->mem_base + args[2] : NULL;
+	child_tidptr = args[4] ? sys->mem_base + args[4] : NULL;
 
-	parent_tidptr = args[2] ? &parent_tid : NULL;
-	child_tidptr = args[4] ? &child_tid : NULL;
-
-	ret = backend_clone(args[0], args[1], parent_tidptr, child_tidptr, args[3]);
-
-	if (parent_tidptr)
-		*(front_int_t *)(sys->mem_base + args[2]) = parent_tid;
-	if (child_tidptr)
-		*(front_int_t *)(sys->mem_base + args[4]) = child_tid;
-
-	return ret;
+	return backend_clone(flags, args[1], parent_tidptr, child_tidptr, args[3]);
 }
 
 static const struct syscall_info info_clone = {
@@ -52,10 +44,24 @@ static const struct syscall_info info_clone = {
 	.translate = translate_sys_clone,
 };
 
-static uint32_t translate_sys_set_thread_area(struct sys_state *sys, uint32_t *args)
+static uint32_t translate_rt_sigreturn(const struct sys_state *sys, uint32_t *args, void *_delta)
 {
-	struct mips32_state *mips = (struct mips32_state *)sys;
-	mips->cpu.ulr = args[0];
+	struct mips32_state *mips = (void *)sys;
+	struct mips32_delta *delta = _delta;
+	frontend_rt_sigreturn(mips, delta);
+	return 0;
+}
+
+static const struct syscall_info info_rt_sigreturn = {
+	SYSCALL_NAME("rt_sigreturn")
+	.nargs = 0,
+	.translate = translate_rt_sigreturn,
+};
+
+static uint32_t translate_sys_set_thread_area(const struct sys_state *sys, uint32_t *args, void *_delta)
+{
+	struct mips32_delta *delta = _delta;
+	mips32_delta_set(delta, ULR, args[0]);
 	return 0;
 }
 
@@ -65,11 +71,14 @@ static const struct syscall_info info_set_thread_area = {
 	.translate = translate_sys_set_thread_area,
 };
 
-const struct syscall_info *frontend_syscall_arch_info(struct sys_state *sys, unsigned num)
+const struct syscall_info *frontend_syscall_arch_info(const struct sys_state *sys, unsigned num)
 {
 	switch (num) {
 	case SYSCALL_NR_FRONT(clone):
 		return &info_clone;
+
+	case SYSCALL_NR_FRONT(rt_sigreturn):
+		return &info_rt_sigreturn;
 
 	case SYSCALL_NR_FRONT(set_thread_area):
 		return &info_set_thread_area;

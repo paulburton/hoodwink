@@ -1,8 +1,10 @@
+#include "backend.h"
 #include "debug.h"
 #include "elf.h"
+#include "frontend.h"
 #include "mips32.h"
 #include "mm.h"
-#include "signals.h"
+#include "signal.h"
 #include "string.h"
 #include "sys.h"
 #include "syscall.h"
@@ -37,13 +39,16 @@ static uint32_t push_aux(struct mips32_state *mips, uint32_t type, uint32_t val)
 void frontend_init(const char *filename, int argc, const char *argv[])
 {
 	struct mips32_state mips;
+	struct mips32_delta delta;
 	struct elf_load_info elf_info;
-	unsigned stack_sz;
-	int err, prot, i, new_argc;
+	struct mips32_siginfo siginfo;
+	unsigned stack_sz, sig_pending;
+	int err, prot, i, new_argc, restart_on_signal;
 	uint32_t argv_addrs[argc + 1];
 	uint32_t envp[1];
 
 	memset(&mips, 0, sizeof(mips));
+	backend_set_tls(&mips);
 
 	mips.sys.mem_base = sys_mmap(NULL, (size_t)2 << 30, PROT_NONE,
 				     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -55,7 +60,8 @@ void frontend_init(const char *filename, int argc, const char *argv[])
 
 	mips.sys.page_bits = 12;
 	mm_init(&mips.sys);
-	signals_init(&mips.sys);
+	frontend_vdso_init(&mips.sys);
+	signal_init(&mips.sys);
 
 	stack_sz = 128 << 10;
 	prot = PROT_READ | PROT_WRITE | PROT_EXEC;
@@ -98,6 +104,18 @@ void frontend_init(const char *filename, int argc, const char *argv[])
 	/* argc */
 	push_u32(&mips, new_argc);
 
-	while (1)
-		frontend_interp(&mips);
+	while (1) {
+		delta.count = 0;
+		frontend_interp_fetchexec(&mips, &delta, 0, &restart_on_signal);
+
+		sig_pending = signal_pending(&mips.sys);
+		if (!sig_pending || !restart_on_signal)
+			frontend_interp_writeback(&mips, &delta);
+
+		while (sig_pending) {
+			signal_dequeue(&mips.sys, &siginfo);
+			frontend_deliver_rt_signal(&mips.sys, &siginfo);
+			sig_pending = signal_pending(&mips.sys);
+		}
+	}
 }

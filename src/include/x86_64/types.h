@@ -29,6 +29,60 @@ struct x86_64_sigaction {
 	x86_64_sigset_t	sa_mask;
 };
 
+struct x86_64_sigaltstack {
+	uint64_t	ss_sp;
+	int32_t		ss_flags;
+	x86_64_size_t	ss_size;
+};
+
+struct x86_64_sigcontext {
+	uint64_t	r8;
+	uint64_t	r9;
+	uint64_t	r10;
+	uint64_t	r11;
+	uint64_t	r12;
+	uint64_t	r13;
+	uint64_t	r14;
+	uint64_t	r15;
+	uint64_t	rdi;
+	uint64_t	rsi;
+	uint64_t	rbp;
+	uint64_t	rbx;
+	uint64_t	rdx;
+	uint64_t	rax;
+	uint64_t	rcx;
+	uint64_t	rsp;
+	uint64_t	rip;
+	uint64_t	eflags;
+	uint16_t	cs;
+	uint16_t	gs;
+	uint16_t	fs;
+	uint16_t	__pad0;
+	uint64_t	err;
+	uint64_t	trapno;
+	uint64_t	oldmask;
+	uint64_t	cr2;
+	uint64_t	fpstate;
+	uint64_t	reserved1[8];
+};
+
+struct x86_64_siginfo {
+	int32_t		si_signo;
+	int32_t		si_code;
+	int32_t		si_errno;
+	union {
+		int32_t	_pad[29];
+
+		struct {
+			x86_64_pid_t	_pid;
+			uint32_t	_uid;
+			int32_t		_status;
+			uint64_t	__attribute__((aligned(4))) _utime;
+			uint64_t	__attribute__((aligned(4))) _stime;
+		} _sigchld;
+	} _sifields;
+};
+
 struct x86_64_stat {
 	uint64_t	st_dev;
 	uint64_t	st_ino;
@@ -54,9 +108,26 @@ struct x86_64_stat64 {
 	/* dummy */
 };
 
+struct x86_64_termios {
+	uint32_t	c_iflag;
+	uint32_t	c_oflag;
+	uint32_t	c_cflag;
+	uint32_t	c_lflag;
+	uint8_t		c_line;
+	uint8_t		c_cc[19];
+};
+
 struct x86_64_timespec {
 	x86_64_time_t	tv_sec;
 	x86_64_long_t	tv_nsec;
+};
+
+struct x86_64_ucontext {
+	uint64_t	uc_flags;
+	uint64_t	uc_link;
+	struct x86_64_sigaltstack	uc_stack;
+	struct x86_64_sigcontext	uc_mcontext;
+	x86_64_sigset_t	uc_sigmask;
 };
 
 struct x86_64_utsname {
@@ -68,7 +139,19 @@ struct x86_64_utsname {
 	char domainname[65];
 };
 
+struct x86_64_rt_sigframe {
+	uint64_t	pretcode;
+	struct x86_64_ucontext	uc;
+	struct x86_64_siginfo	info;
+};
+
 #define X86_64_EINVAL		22
+
+#define X86_64_IOC_NONE		0x00
+#define X86_64_IOC_WRITE	0x01
+#define X86_64_IOC_READ		0x02
+#define X86_64_IOC_SIZEBITS	14
+#define X86_64_IOC_DIRBITS	2
 
 #define X86_64_MAP_SHARED	0x0001
 #define X86_64_MAP_PRIVATE	0x0002
@@ -91,7 +174,37 @@ struct x86_64_utsname {
 #define X86_64_SA_SIGINFO	0x00000004
 #define X86_64_SA_RESTORER	0x04000000
 
+#define X86_64_SIGHUP		 1
+#define X86_64_SIGINT		 2
+#define X86_64_SIGQUIT		 3
+#define X86_64_SIGILL		 4
+#define X86_64_SIGTRAP		 5
+#define X86_64_SIGABRT		 6
+#define X86_64_SIGBUS		 7
+#define X86_64_SIGFPE		 8
+#define X86_64_SIGKILL		 9
+#define X86_64_SIGUSR1		10
 #define X86_64_SIGSEGV		11
+#define X86_64_SIGUSR2		12
+#define X86_64_SIGPIPE		13
+#define X86_64_SIGALRM		14
+#define X86_64_SIGTERM		15
+#define X86_64_SIGSTKFLT	16
+#define X86_64_SIGCHLD		17
+#define X86_64_SIGCONT		18
+#define X86_64_SIGSTOP		19
+#define X86_64_SIGTSTP		20
+#define X86_64_SIGTTIN		21
+#define X86_64_SIGTTOU		22
+#define X86_64_SIGURG		23
+#define X86_64_SIGXCPU		24
+#define X86_64_SIGXFSZ		25
+#define X86_64_SIGVTALRM	26
+#define X86_64_SIGPROF		27
+#define X86_64_SIGWINCH		28
+#define X86_64_SIGIO		29
+#define X86_64_SIGPWR		30
+#define X86_64_SIGSYS		31
 
 #define X86_64_UTSNAME_MACHINE	"x86_64"
 

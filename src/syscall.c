@@ -6,20 +6,20 @@
 
 #define NUM_OFFSET SYSCALL_NR_FRONT(_min)
 
-#define SYSCALL(_name, _ret, ...)						\
-__attribute__((weak))								\
-uint32_t translate_sys_##_name(struct sys_state *sys, uint32_t *args)		\
-{										\
-	return -FRONT_EINVAL;							\
+#define SYSCALL(_name, _ret, ...)							\
+__attribute__((weak))									\
+uint32_t translate_sys_##_name(const struct sys_state *sys, uint32_t *args, void *delta)\
+{											\
+	return -FRONT_EINVAL;								\
 }
 
 #include "syscall-list.h"
 #undef SYSCALL
 
-#define SYSCALL(_name, _ret, ...) [SYSCALL_NR_FRONT(_name) - NUM_OFFSET] = {	\
-	SYSCALL_NAME(#_name)							\
-	.nargs = VA_NUM_ARGS(__VA_ARGS__),					\
-	.translate = translate_sys_##_name,					\
+#define SYSCALL(_name, _ret, ...) [SYSCALL_NR_FRONT(_name) - NUM_OFFSET] = {		\
+	SYSCALL_NAME(#_name)								\
+	.nargs = VA_NUM_ARGS(__VA_ARGS__),						\
+	.translate = translate_sys_##_name,						\
 },
 
 static const struct syscall_info syscall_info[] = {
@@ -28,10 +28,10 @@ static const struct syscall_info syscall_info[] = {
 
 #undef SYSCALL
 
-void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
+uint32_t frontend_syscall_invoke(const struct sys_state *sys, unsigned num, void *delta)
 {
 	const struct syscall_info *info;
-	uint32_t args[8], ret;
+	uint32_t args[8];
 	unsigned nargs;
 	int i;
 
@@ -58,6 +58,5 @@ void frontend_syscall_invoke(struct sys_state *sys, unsigned num)
 	(void)i;
 #endif
 
-	ret = info ? info->translate(sys, args) : -FRONT_EINVAL;
-	frontend_syscall_ret(sys, ret);
+	return info ? info->translate(sys, args, delta) : -FRONT_EINVAL;
 }

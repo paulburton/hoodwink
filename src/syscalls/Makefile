@@ -17,6 +17,7 @@ local_c_source := \
 	getpid.c \
 	getppid.c \
 	getuid.c \
+	ioctl.c \
 	lseek.c \
 	lstat64.c \
 	mmap.c \
@@ -24,6 +25,7 @@ local_c_source := \
 	open.c \
 	read.c \
 	readlink.c \
+	rt_sigaction.c \
 	tgkill.c \
 	uname.c \
 	waitpid.c \

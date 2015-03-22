@@ -1,7 +1,8 @@
 local_dir := src/backend/x86_64
 
 local_c_source := \
-	clone.c
+	clone.c \
+	tls.c
 
 local_s_source := \
 	start.S \

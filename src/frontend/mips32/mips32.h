@@ -2,6 +2,8 @@
 #define __hoodwink_mips32_h__
 
 #include "sys.h"
+#include "syscall.h"
+#include "util.h"
 
 struct mips32_state {
 	struct sys_state sys;
@@ -14,6 +16,48 @@ struct mips32_state {
 		uint32_t ulr;
 	} cpu;
 };
+
+enum mips32_delta_reg {
+	GPR0	= 0,
+	GPR31	= 31,
+
+	FPR0	= 32,
+	FPR31	= 63,
+
+	HI,
+	LO,
+
+	ULR,
+
+	MAX_DELTA_SIZE,
+};
+
+struct mips32_delta {
+	uint64_t values[MAX_DELTA_SIZE];
+	enum mips32_delta_reg regs[MAX_DELTA_SIZE];
+	uint8_t count;
+	uint32_t next_pc;
+};
+
+static inline void mips32_delta_set(struct mips32_delta *d, enum mips32_delta_reg reg, uint64_t val)
+{
+	unsigned i;
+
+	/* zero never changes */
+	if (reg == GPR0)
+		return;
+
+#ifdef DEBUG
+	if (d->count >= MAX_DELTA_SIZE) {
+		debug("Delta too large?!?\n");
+		sys_exit(1);
+	}
+#endif
+
+	i = d->count++;
+	d->regs[i] = reg;
+	d->values[i] = val;
+}
 
 enum mips_op {
 	MIPS_OP_SPEC		= 0x00,
@@ -106,8 +150,19 @@ enum mips_op_spec3_bshfl {
 	MIPS_BSHFL_SEH		= 0x18,
 };
 
-extern void frontend_interp(struct mips32_state *sys);
-extern uint32_t frontend_rdhwr(struct mips32_state *sys, unsigned reg);
-extern void frontend_syscall(struct mips32_state *sys);
+enum mips_vdso_entry {
+	VDSO_SIGRETURN,
+	VDSO_RT_SIGRETURN,
+};
+
+extern void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_delta *delta, uint32_t pc_off, int *restart_on_signal);
+extern void frontend_interp_writeback(struct mips32_state *mips, struct mips32_delta *delta);
+
+extern uint32_t frontend_rdhwr(const struct mips32_state *sys, unsigned reg);
+
+extern void frontend_rt_sigreturn(const struct mips32_state *mips, struct mips32_delta *delta);
+
+extern void frontend_vdso_init(struct sys_state *sys);
+extern uint32_t frontend_vdso_entry(struct sys_state *sys, enum mips_vdso_entry entry);
 
 #endif /* __hoodwink_mips32_h__ */
