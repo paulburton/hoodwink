@@ -613,11 +613,9 @@ void frontend_interp_writeback(struct mips32_state *mips, struct mips32_delta *d
 			mips->cpu.ulr = val;
 			break;
 
-#ifdef DEBUG
 		default:
 			debug("Invalid delta reg 0x%x\n", (unsigned)reg);
 			sys_exit(1);
-#endif
 		}
 	}
 
