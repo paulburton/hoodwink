@@ -8,7 +8,6 @@ local_c_source := \
 	exit_group.c \
 	fcntl.c \
 	fork.c \
-	fstat64.c \
 	futex.c \
 	getcwd.c \
 	getegid.c \
@@ -20,7 +19,6 @@ local_c_source := \
 	getuid.c \
 	ioctl.c \
 	lseek.c \
-	lstat64.c \
 	mmap.c \
 	mprotect.c \
 	open.c \
@@ -28,6 +26,7 @@ local_c_source := \
 	readlink.c \
 	rt_sigaction.c \
 	socket.c \
+	stat.c \
 	tgkill.c \
 	time.c \
 	uname.c \
