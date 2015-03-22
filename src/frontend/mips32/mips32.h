@@ -120,6 +120,7 @@ enum mips_op_spec {
 	MIPS_SPEC_MFHI		= 0x10,
 	MIPS_SPEC_MFLO		= 0x12,
 	MIPS_SPEC_MULTU		= 0x19,
+	MIPS_SPEC_DIV		= 0x1a,
 	MIPS_SPEC_DIVU		= 0x1b,
 	MIPS_SPEC_ADD		= 0x20,
 	MIPS_SPEC_ADDU		= 0x21,

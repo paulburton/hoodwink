@@ -170,6 +170,12 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			mips32_delta_set(delta, HI, u64 >> 32);
 			break;
 
+		case MIPS_SPEC_DIV:
+			debug_in_asm("div\t%s, %s\n", reg_names[rs], reg_names[rt]);
+			mips32_delta_set(delta, LO, (int32_t)gpr[rs] / (int32_t)gpr[rt]);
+			mips32_delta_set(delta, HI, (int32_t)gpr[rs] % (int32_t)gpr[rt]);
+			break;
+
 		case MIPS_SPEC_DIVU:
 			debug_in_asm("divu\t%s, %s\n", reg_names[rs], reg_names[rt]);
 			mips32_delta_set(delta, LO, gpr[rs] / gpr[rt]);
