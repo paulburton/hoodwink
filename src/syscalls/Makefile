@@ -4,6 +4,7 @@ local_c_source := \
 	access.c \
 	brk.c \
 	close.c \
+	execve.c \
 	exit.c \
 	exit_group.c \
 	fcntl.c \

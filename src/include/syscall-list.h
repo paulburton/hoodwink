@@ -6,6 +6,7 @@ SYSCALL(_llseek, int, int fd, unsigned long offset_high, unsigned long offset_lo
 SYSCALL(access, int, const char *pathname, int mode)
 SYSCALL(brk, int, void *addr)
 SYSCALL(close, int, int fd)
+SYSCALL(execve, int, const char *filename, char *const argv[], char *const envp[])
 SYSCALL(exit, void, int status)
 SYSCALL(exit_group, void, int status)
 SYSCALL(fork, pid_t)
