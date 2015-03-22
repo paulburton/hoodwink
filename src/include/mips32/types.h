@@ -146,6 +146,9 @@ struct mips32_rt_sigframe {
 
 #define MIPS32_EINVAL		22
 
+#define MIPS32_F_GETFD		1
+#define MIPS32_F_GETFL		3
+
 #define MIPS32_IOC_NONE		0x01
 #define MIPS32_IOC_READ		0x02
 #define MIPS32_IOC_WRITE	0x04

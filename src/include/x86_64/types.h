@@ -148,6 +148,9 @@ struct x86_64_rt_sigframe {
 
 #define X86_64_EINVAL		22
 
+#define X86_64_F_GETFD		1
+#define X86_64_F_GETFL		3
+
 #define X86_64_IOC_NONE		0x00
 #define X86_64_IOC_WRITE	0x01
 #define X86_64_IOC_READ		0x02

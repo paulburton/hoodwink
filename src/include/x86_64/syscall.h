@@ -328,6 +328,7 @@
 
 /* dummies */
 #define X86_64_NR__llseek	-1
+#define X86_64_NR_fcntl64	-1
 #define X86_64_NR_fstat64	-1
 #define X86_64_NR_lstat64	-1
 #define X86_64_NR_mmap2		-1
