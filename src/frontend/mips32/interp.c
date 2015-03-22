@@ -411,6 +411,36 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		mips32_delta_set(delta, GPR0 + rt, imm << 16);
 		break;
 
+	case MIPS_OP_BEQL:
+		tgt = delta->next_pc + (simm << 2);
+
+		if (rt)
+			debug_in_asm("beql\t%s, %s", reg_names[rs], reg_names[rt]);
+		else
+			debug_in_asm("beqzl\t%s", reg_names[rs]);
+		debug_in_asm(", 0x%x\n", tgt);
+
+		if (gpr[rs] == gpr[rt]) {
+			delta->next_pc = tgt;
+			do_ds = true;
+		}
+		break;
+
+	case MIPS_OP_BNEL:
+		tgt = delta->next_pc + (simm << 2);
+
+		if (rt)
+			debug_in_asm("bnel\t%s, %s", reg_names[rs], reg_names[rt]);
+		else
+			debug_in_asm("bnezl\t%s", reg_names[rs]);
+		debug_in_asm(", 0x%x\n", tgt);
+
+		if (gpr[rs] != gpr[rt]) {
+			delta->next_pc = tgt;
+			do_ds = true;
+		}
+		break;
+
 	case MIPS_OP_SPEC2:
 		op = inst & 0x3f;
 		switch (op) {
