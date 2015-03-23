@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 
+typedef int16_t		x86_64_short_t;
+typedef uint16_t	x86_64_ushort_t;
 typedef int32_t		x86_64_int_t;
+typedef uint32_t	x86_64_uint_t;
 typedef int64_t		x86_64_long_t;
 typedef uint64_t	x86_64_ulong_t;
 
@@ -21,6 +24,13 @@ typedef uint32_t	x86_64_uid_t;
 struct x86_64_iovec {
 	uint64_t	iov_base;
 	uint64_t	iov_len;
+};
+
+struct x86_64_linux_dirent {
+	x86_64_ulong_t	d_ino;
+	x86_64_ulong_t	d_off;
+	x86_64_ushort_t	d_reclen;
+	char		d_name[1];
 };
 
 struct x86_64_sigaction {

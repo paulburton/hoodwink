@@ -11,6 +11,7 @@ local_c_source := \
 	fork.c \
 	futex.c \
 	getcwd.c \
+	getdents.c \
 	getegid.c \
 	geteuid.c \
 	getgid.c \

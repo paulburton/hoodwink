@@ -99,6 +99,7 @@
 	typedef arch##_uid_t			prefix##uid_t;		\
 	typedef arch##_ulong_t			prefix##ulong_t;	\
 	typedef struct arch##_iovec		prefix##iovec_s;	\
+	typedef struct arch##_linux_dirent	prefix##linux_dirent_s;	\
 	typedef struct arch##_rt_sigframe	prefix##rt_sigframe_s;	\
 	typedef struct arch##_sigaction		prefix##sigaction_s;	\
 	typedef struct arch##_sigaltstack	prefix##sigaltstack_s;	\
@@ -139,6 +140,14 @@ DECLARE_CONSTANTS(X86_64,)
 DECLARE_TYPEDEFS(mips32, front_)
 DECLARE_CONSTANTS(MIPS32, FRONT_)
 #endif
+
+typedef struct linux_dirent64 {
+	uint64_t	d_ino;
+	int64_t		d_off;
+	uint16_t	d_reclen;
+	uint8_t		d_type;
+	char		d_name[0];
+} linux_dirent64_s;
 
 #define _____GEN_FLAG_TRANSLATOR(flag)					\
 	if (f & FRONT_##flag)						\

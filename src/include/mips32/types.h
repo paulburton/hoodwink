@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 
+typedef int16_t		mips32_short_t;
+typedef uint16_t	mips32_ushort_t;
 typedef int32_t		mips32_int_t;
+typedef uint32_t	mips32_uint_t;
 typedef int32_t		mips32_long_t;
 typedef uint32_t	mips32_ulong_t;
 
@@ -22,6 +25,13 @@ typedef int32_t		mips32_uid_t;
 struct mips32_iovec {
 	uint32_t	iov_base;
 	uint32_t	iov_len;
+};
+
+struct mips32_linux_dirent {
+	mips32_ulong_t	d_ino;
+	mips32_ulong_t	d_off;
+	mips32_ushort_t	d_reclen;
+	char		d_name[1];
 };
 
 struct mips32_sigaction {
