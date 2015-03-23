@@ -71,6 +71,19 @@ static const struct syscall_info info_set_thread_area = {
 	.translate = translate_sys_set_thread_area,
 };
 
+static uint32_t translate_sys_syscall(const struct sys_state *sys, uint32_t *args, void *_delta)
+{
+	unsigned num = args[0];
+
+	return frontend_syscall_invoke(sys, num, &args[1], _delta);
+}
+
+static const struct syscall_info info_syscall = {
+	SYSCALL_NAME("syscall")
+	.nargs = 7,
+	.translate = translate_sys_syscall,
+};
+
 const struct syscall_info *frontend_syscall_arch_info(const struct sys_state *sys, unsigned num)
 {
 	switch (num) {
@@ -82,6 +95,9 @@ const struct syscall_info *frontend_syscall_arch_info(const struct sys_state *sy
 
 	case SYSCALL_NR_FRONT(set_thread_area):
 		return &info_set_thread_area;
+
+	case SYSCALL_NR_FRONT(syscall):
+		return &info_syscall;
 
 	default:
 		return NULL;

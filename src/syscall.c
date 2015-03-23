@@ -28,10 +28,10 @@ static const struct syscall_info syscall_info[] = {
 
 #undef SYSCALL
 
-uint32_t frontend_syscall_invoke(const struct sys_state *sys, unsigned num, void *delta)
+uint32_t frontend_syscall_invoke(const struct sys_state *sys, unsigned num, uint32_t *args, void *delta)
 {
 	const struct syscall_info *info;
-	uint32_t args[8];
+	uint32_t _args[8];
 	unsigned nargs;
 	int i;
 
@@ -47,7 +47,11 @@ uint32_t frontend_syscall_invoke(const struct sys_state *sys, unsigned num, void
 		info = frontend_syscall_arch_info(sys, num);
 
 	nargs = info ? info->nargs : 0;
-	frontend_syscall_args(sys, nargs, args);
+
+	if (!args) {
+		args = _args;
+		frontend_syscall_args(sys, nargs, args);
+	}
 
 #ifdef DEBUG
 	debug("syscall %u %s(", num, info ? info->name : "UNKNOWN");

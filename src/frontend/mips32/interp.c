@@ -130,7 +130,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			else
 				debug_in_asm("\n");
 
-			tgt = frontend_syscall_invoke(&mips->sys, gpr[2], delta);
+			tgt = frontend_syscall_invoke(&mips->sys, gpr[2], NULL, delta);
 
 			switch (gpr[2]) {
 			case SYSCALL_NR_FRONT(sigreturn):

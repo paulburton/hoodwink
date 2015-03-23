@@ -48,7 +48,7 @@ struct syscall_info {
 #endif
 
 /* generic frontend code */
-extern uint32_t frontend_syscall_invoke(const struct sys_state *sys, unsigned num, void *delta);
+extern uint32_t frontend_syscall_invoke(const struct sys_state *sys, unsigned num, uint32_t *args, void *delta);
 
 /* provided by the arch-specific frontend code */
 extern void frontend_syscall_args(const struct sys_state *sys, unsigned nargs, uint32_t *args);
