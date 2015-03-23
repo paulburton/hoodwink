@@ -138,6 +138,7 @@ enum mips_op_spec {
 };
 
 enum mips_op_spec2 {
+	MIPS_SPEC2_MADD		= 0x00,
 	MIPS_SPEC2_MUL		= 0x02,
 	MIPS_SPEC2_CLZ		= 0x20,
 };

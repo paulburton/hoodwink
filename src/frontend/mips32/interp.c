@@ -451,6 +451,14 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	case MIPS_OP_SPEC2:
 		op = inst & 0x3f;
 		switch (op) {
+		case MIPS_SPEC2_MADD:
+			debug_in_asm("madd\t%s, %s\n", reg_names[rs], reg_names[rt]);
+			u64 = (int64_t)(int32_t)gpr[rs] * (int32_t)gpr[rt];
+			u64 += ((uint64_t)mips->cpu.hi << 32) | mips->cpu.lo;
+			mips32_delta_set(delta, HI, u64 >> 32);
+			mips32_delta_set(delta, LO, (uint32_t)u64);
+			break;
+
 		case MIPS_SPEC2_MUL:
 			debug_in_asm("mul\t%s, %s, %s\n", reg_names[rd], reg_names[rs], reg_names[rt]);
 			mips32_delta_set(delta, GPR0 + rd, gpr[rs] * gpr[rt]);
