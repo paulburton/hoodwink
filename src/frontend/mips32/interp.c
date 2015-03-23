@@ -163,6 +163,13 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			mips32_delta_set(delta, GPR0 + rd, mips->cpu.lo);
 			break;
 
+		case MIPS_SPEC_MULT:
+			debug_in_asm("mult\t%s, %s\n", reg_names[rs], reg_names[rt]);
+			u64 = (int64_t)(int32_t)gpr[rs] * (int32_t)gpr[rt];
+			mips32_delta_set(delta, LO, (uint32_t)u64);
+			mips32_delta_set(delta, HI, u64 >> 32);
+			break;
+
 		case MIPS_SPEC_MULTU:
 			debug_in_asm("multu\t%s, %s\n", reg_names[rs], reg_names[rt]);
 			u64 = (uint64_t)gpr[rs] * gpr[rt];
