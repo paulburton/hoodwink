@@ -131,6 +131,13 @@ struct mips32_timespec {
 	mips32_long_t	tv_nsec;
 };
 
+struct mips32_tms {
+	mips32_clock_t	tms_utime;
+	mips32_clock_t	tms_stime;
+	mips32_clock_t	tms_cutime;
+	mips32_clock_t	tms_cstime;
+};
+
 struct mips32_ucontext {
 	uint32_t	uc_flags;
 	uint32_t	uc_link;

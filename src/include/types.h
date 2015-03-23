@@ -85,6 +85,7 @@
 #define FRONT_SIGXCPU	CAT(FRONT_ARCH, _SIGXCPU)
 
 #define DECLARE_TYPEDEFS(arch, prefix)					\
+	typedef arch##_clock_t			prefix##clock_t;	\
 	typedef arch##_int_t			prefix##int_t;		\
 	typedef arch##_gid_t			prefix##gid_t;		\
 	typedef arch##_loff_t			prefix##loff_t;		\
@@ -109,6 +110,7 @@
 	typedef struct arch##_stat64		prefix##stat64_s;	\
 	typedef struct arch##_termios		prefix##termios_s;	\
 	typedef struct arch##_timespec		prefix##timespec_s;	\
+	typedef struct arch##_tms		prefix##tms_s;		\
 	typedef struct arch##_ucontext		prefix##ucontext_s;	\
 	typedef struct arch##_utsname		prefix##utsname_s;
 

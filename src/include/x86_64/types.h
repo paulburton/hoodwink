@@ -10,6 +10,7 @@ typedef uint32_t	x86_64_uint_t;
 typedef int64_t		x86_64_long_t;
 typedef uint64_t	x86_64_ulong_t;
 
+typedef int64_t		x86_64_clock_t;
 typedef uint32_t	x86_64_gid_t;
 typedef uint64_t	x86_64_loff_t;
 typedef uint32_t	x86_64_mode_t;
@@ -131,6 +132,13 @@ struct x86_64_termios {
 struct x86_64_timespec {
 	x86_64_time_t	tv_sec;
 	x86_64_long_t	tv_nsec;
+};
+
+struct x86_64_tms {
+	x86_64_clock_t	tms_utime;
+	x86_64_clock_t	tms_stime;
+	x86_64_clock_t	tms_cutime;
+	x86_64_clock_t	tms_cstime;
 };
 
 struct x86_64_ucontext {
