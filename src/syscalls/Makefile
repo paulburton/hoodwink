@@ -33,6 +33,7 @@ local_c_source := \
 	time.c \
 	uname.c \
 	waitpid.c \
-	write.c
+	write.c \
+	xattr.c
 
 c_source += $(addprefix $(local_dir)/,$(local_c_source))
