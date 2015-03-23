@@ -14,7 +14,6 @@ local_c_source := \
 	getegid.c \
 	geteuid.c \
 	getgid.c \
-	getpgrp.c \
 	getpid.c \
 	getppid.c \
 	getuid.c \
@@ -23,6 +22,7 @@ local_c_source := \
 	mmap.c \
 	mprotect.c \
 	open.c \
+	pgrp.c \
 	read.c \
 	readlink.c \
 	rt_sigaction.c \
