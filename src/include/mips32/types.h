@@ -149,12 +149,6 @@ struct mips32_rt_sigframe {
 #define MIPS32_F_GETFD		1
 #define MIPS32_F_GETFL		3
 
-#define MIPS32_IOC_NONE		0x01
-#define MIPS32_IOC_READ		0x02
-#define MIPS32_IOC_WRITE	0x04
-#define MIPS32_IOC_SIZEBITS	13
-#define MIPS32_IOC_DIRBITS	3
-
 #define MIPS32_MAP_SHARED	0x0001
 #define MIPS32_MAP_PRIVATE	0x0002
 #define MIPS32_MAP_FIXED	0x0010
