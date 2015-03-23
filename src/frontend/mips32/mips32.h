@@ -75,6 +75,7 @@ enum mips_op {
 	MIPS_OP_ORI		= 0x0d,
 	MIPS_OP_XORI		= 0x0e,
 	MIPS_OP_LUI		= 0x0f,
+	MIPS_OP_COP1		= 0x11,
 	MIPS_OP_BEQL		= 0x14,
 	MIPS_OP_BNEL		= 0x15,
 	MIPS_OP_SPEC2		= 0x1c,
@@ -149,6 +150,11 @@ enum mips_op_spec3 {
 	MIPS_SPEC3_INS		= 0x04,
 	MIPS_SPEC3_BSHFL	= 0x20,
 	MIPS_SPEC3_RDHWR	= 0x3b,
+};
+
+enum mips_op_cop1 {
+	MIPS_COP1_MF		= 0x00,
+	MIPS_COP1_MT		= 0x04,
 };
 
 enum mips_op_spec3_bshfl {

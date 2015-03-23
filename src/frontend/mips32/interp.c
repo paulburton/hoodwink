@@ -418,6 +418,24 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		mips32_delta_set(delta, GPR0 + rt, imm << 16);
 		break;
 
+	case MIPS_OP_COP1:
+		op = rs;
+		switch (op) {
+		case MIPS_COP1_MF:
+			debug_in_asm("mfc1\t%s, $f%d\n", reg_names[rt], rd);
+			mips32_delta_set(delta, GPR0 + rt, (uint32_t)fpr[rd]);
+			break;
+
+		case MIPS_COP1_MT:
+			debug_in_asm("mtc1\t%s, $f%d\n", reg_names[rt], rd);
+			mips32_delta_set(delta, FPR0 + rd, gpr[rt]);
+			break;
+
+		default:
+			goto ri;
+		}
+		break;
+
 	case MIPS_OP_BEQL:
 		tgt = delta->next_pc + (simm << 2);
 
