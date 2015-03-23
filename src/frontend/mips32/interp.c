@@ -23,6 +23,14 @@ static const char *reg_names[32] = {
 	"gp", "sp", "fp", "ra",
 };
 
+static const char *float_fmt_names[] = {
+	[FLT_S] = "s",
+	[FLT_D] = "d",
+	[FLT_W] = "w",
+	[FLT_L] = "l",
+	[FLT_PS] = "ps",
+};
+
 static uint32_t se8(unsigned imm)
 {
 	return (uint32_t)(int32_t)(int8_t)imm;
@@ -31,6 +39,23 @@ static uint32_t se8(unsigned imm)
 static uint32_t se16(unsigned imm)
 {
 	return (uint32_t)(int32_t)(int16_t)imm;
+}
+
+static uint32_t read_f32(const struct mips32_state *mips, unsigned fpr)
+{
+	return mips->cpu.fpr[fpr];
+}
+
+static uint64_t read_f64(const struct mips32_state *mips, unsigned fpr)
+{
+	uint64_t ret;
+
+	if (mips32_fr(mips))
+		return mips->cpu.fpr[fpr];
+
+	ret = read_f32(mips, fpr & ~1);
+	ret |= (uint64_t)read_f32(mips, fpr | 1) << 32;
+	return ret;
 }
 
 void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_delta *delta, uint32_t pc_off, int *restart_on_signal)
@@ -51,6 +76,15 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	int simm = se16(imm);
 	bool do_ds = false;
 	void *ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
+	enum mips_flt_format fmt;
+	union {
+		float f;
+		uint32_t u32;
+	} sgl[2];
+	union {
+		double d;
+		uint64_t u64;
+	} dbl[2];
 
 	debug_in_asm("interp %8x: %08x ", pc, inst);
 
@@ -419,16 +453,126 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		break;
 
 	case MIPS_OP_COP1:
-		op = rs;
+		op = inst & 0x3f;
+		fmt = rs & 0xf;
+
 		switch (op) {
-		case MIPS_COP1_MF:
-			debug_in_asm("mfc1\t%s, $f%d\n", reg_names[rt], rd);
-			mips32_delta_set(delta, GPR0 + rt, (uint32_t)fpr[rd]);
+		case MIPS_COP1_0:
+			op = rs;
+			switch (op) {
+			case MIPS_COP1_MF:
+				debug_in_asm("mfc1\t%s, $f%d\n", reg_names[rt], rd);
+				mips32_delta_set(delta, GPR0 + rt, (uint32_t)fpr[rd]);
+				break;
+
+			case MIPS_COP1_CF:
+				debug_in_asm("cfc1\t%s, $f%d\n", reg_names[rt], rd);
+				mips32_delta_set(delta, GPR0 + rt, 0);
+				break;
+
+			case MIPS_COP1_MT:
+				debug_in_asm("mtc1\t%s, $f%d\n", reg_names[rt], rd);
+				mips32_delta_set_f32(mips, delta, rd, gpr[rt]);
+				break;
+
+			default:
+				goto ri;
+			}
 			break;
 
-		case MIPS_COP1_MT:
-			debug_in_asm("mtc1\t%s, $f%d\n", reg_names[rt], rd);
-			mips32_delta_set(delta, FPR0 + rd, gpr[rt]);
+		case MIPS_COP1_MUL:
+			switch (fmt) {
+			case FLT_S:
+				sgl[0].u32 = read_f32(mips, rd);
+				sgl[1].u32 = read_f32(mips, rt);
+				sgl[0].f *= sgl[1].f;
+				mips32_delta_set_f32(mips, delta, sa, sgl[0].u32);
+				break;
+
+			case FLT_D:
+				dbl[0].u64 = read_f64(mips, rd);
+				dbl[1].u64 = read_f64(mips, rt);
+				dbl[0].d *= dbl[1].d;
+				mips32_delta_set_f64(mips, delta, sa, dbl[0].u64);
+				break;
+
+			default:
+				goto ri;
+			}
+			debug_in_asm("mul.%s\t$f%u, $f%u, $f%u\n", float_fmt_names[fmt], sa, rd, rt);
+			break;
+
+		case MIPS_COP1_DIV:
+			switch (fmt) {
+			case FLT_S:
+				sgl[0].u32 = read_f32(mips, rd);
+				sgl[1].u32 = read_f32(mips, rt);
+				sgl[0].f /= sgl[1].f;
+				mips32_delta_set_f32(mips, delta, sa, sgl[0].u32);
+				break;
+
+			case FLT_D:
+				dbl[0].u64 = read_f64(mips, rd);
+				dbl[1].u64 = read_f64(mips, rt);
+				dbl[0].d /= dbl[1].d;
+				mips32_delta_set_f64(mips, delta, sa, dbl[0].u64);
+				break;
+
+			default:
+				goto ri;
+			}
+			debug_in_asm("div.%s\t$f%u, $f%u, $f%u\n", float_fmt_names[fmt], sa, rd, rt);
+			break;
+
+		case MIPS_COP1_MOV:
+			switch (fmt) {
+			case FLT_S:
+			case FLT_W:
+				mips32_delta_set_f32(mips, delta, sa, read_f32(mips, rd));
+				break;
+
+			case FLT_D:
+			case FLT_L:
+			case FLT_PS:
+				mips32_delta_set_f64(mips, delta, sa, read_f64(mips, rd));
+				break;
+
+			default:
+				goto ri;
+			}
+			debug_in_asm("mov.%s\t$f%u, $f%u\n", float_fmt_names[fmt], sa, rd);
+			break;
+
+		case MIPS_COP1_CVT_S:
+			switch (fmt) {
+			case FLT_D:
+				dbl[0].u64 = read_f64(mips, rd);
+				sgl[0].f = dbl[0].d;
+				break;
+
+			case FLT_W:
+				sgl[0].f = read_f32(mips, rd);
+				break;
+
+			default:
+				goto ri;
+			}
+			debug_in_asm("cvt.s.%s\t$f%u, $f%u\n", float_fmt_names[fmt], sa, rd);
+			mips32_delta_set_f32(mips, delta, sa, sgl[0].u32);
+			break;
+
+		case MIPS_COP1_CVT_D:
+			switch (fmt) {
+			case FLT_S:
+				sgl[0].f = read_f32(mips, rd);
+				dbl[0].d = sgl[0].f;
+				break;
+
+			default:
+				goto ri;
+			}
+			debug_in_asm("cvt.d.%s\t$f%u, $f%u\n", float_fmt_names[fmt], sa, rd);
+			mips32_delta_set_f64(mips, delta, sa, dbl[0].u64);
 			break;
 
 		default:
@@ -618,6 +762,11 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		mips32_delta_set(delta, GPR0 + rt, *(uint32_t *)ptr);
 		break;
 
+	case MIPS_OP_LWC1:
+		debug_in_asm("lwc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		mips32_delta_set(delta, FPR0 + rt, *(uint32_t *)ptr);
+		break;
+
 	case MIPS_OP_PREF:
 		debug_in_asm("pref\t0x%x, %d(%s)\n", rt, simm, reg_names[rs]);
 		break;
@@ -632,6 +781,11 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		/* TODO: atomics! */
 		*(uint32_t *)ptr = gpr[rt];
 		mips32_delta_set(delta, GPR0 + rt, 1);
+		break;
+
+	case MIPS_OP_SWC1:
+		debug_in_asm("swc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
+		*(uint32_t *)ptr = fpr[rt];
 		break;
 
 	case MIPS_OP_SDC1:

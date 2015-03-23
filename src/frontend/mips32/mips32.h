@@ -17,6 +17,11 @@ struct mips32_state {
 	} cpu;
 };
 
+static inline int mips32_fr(const struct mips32_state *mips)
+{
+	return 0;
+}
+
 enum mips32_delta_reg {
 	GPR0	= 0,
 	GPR31	= 31,
@@ -59,6 +64,24 @@ static inline void mips32_delta_set(struct mips32_delta *d, enum mips32_delta_re
 	d->values[i] = val;
 }
 
+static inline void mips32_delta_set_f32(const struct mips32_state *mips, struct mips32_delta *d,
+					unsigned fpr, uint32_t val)
+{
+	mips32_delta_set(d, FPR0 + fpr, val);
+}
+
+static inline void mips32_delta_set_f64(const struct mips32_state *mips, struct mips32_delta *d,
+					unsigned fpr, uint64_t val)
+{
+	if (mips32_fr(mips)) {
+		mips32_delta_set(d, FPR0 + fpr, val);
+		return;
+	}
+
+	mips32_delta_set_f32(mips, d, fpr & ~1, (uint32_t)val);
+	mips32_delta_set_f32(mips, d, fpr | 1, val >> 32);
+}
+
 enum mips_op {
 	MIPS_OP_SPEC		= 0x00,
 	MIPS_OP_REGIMM		= 0x01,
@@ -93,9 +116,11 @@ enum mips_op {
 	MIPS_OP_SW		= 0x2b,
 	MIPS_OP_SWR		= 0x2e,
 	MIPS_OP_LL		= 0x30,
+	MIPS_OP_LWC1		= 0x31,
 	MIPS_OP_PREF		= 0x33,
 	MIPS_OP_LDC1		= 0x35,
 	MIPS_OP_SC		= 0x38,
+	MIPS_OP_SWC1		= 0x39,
 	MIPS_OP_SDC1		= 0x3d,
 };
 
@@ -153,13 +178,31 @@ enum mips_op_spec3 {
 };
 
 enum mips_op_cop1 {
+	MIPS_COP1_0		= 0x00,
+	MIPS_COP1_MUL		= 0x02,
+	MIPS_COP1_DIV		= 0x03,
+	MIPS_COP1_MOV		= 0x06,
+	MIPS_COP1_CVT_S		= 0x20,
+	MIPS_COP1_CVT_D		= 0x21,
+};
+
+enum mips_op_cop1_0 {
 	MIPS_COP1_MF		= 0x00,
+	MIPS_COP1_CF		= 0x02,
 	MIPS_COP1_MT		= 0x04,
 };
 
 enum mips_op_spec3_bshfl {
 	MIPS_BSHFL_SEB		= 0x10,
 	MIPS_BSHFL_SEH		= 0x18,
+};
+
+enum mips_flt_format {
+	FLT_S			= 0x00,
+	FLT_D			= 0x01,
+	FLT_W			= 0x04,
+	FLT_L			= 0x05,
+	FLT_PS			= 0x06,
 };
 
 enum mips_vdso_entry {
