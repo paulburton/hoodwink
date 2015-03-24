@@ -14,6 +14,7 @@ struct mips32_state {
 		uint32_t pc;
 		uint32_t hi, lo;
 		uint32_t ulr;
+		uint8_t fcc;
 	} cpu;
 };
 
@@ -28,6 +29,7 @@ enum mips32_delta_reg {
 
 	FPR0	= 32,
 	FPR31	= 63,
+	FCC,
 
 	HI,
 	LO,
@@ -178,18 +180,19 @@ enum mips_op_spec3 {
 };
 
 enum mips_op_cop1 {
-	MIPS_COP1_0		= 0x00,
 	MIPS_COP1_MUL		= 0x02,
 	MIPS_COP1_DIV		= 0x03,
 	MIPS_COP1_MOV		= 0x06,
 	MIPS_COP1_CVT_S		= 0x20,
 	MIPS_COP1_CVT_D		= 0x21,
+	MIPS_COP1_C_LT		= 0x3c,
 };
 
-enum mips_op_cop1_0 {
+enum mips_op_cop1_xfer {
 	MIPS_COP1_MF		= 0x00,
 	MIPS_COP1_CF		= 0x02,
 	MIPS_COP1_MT		= 0x04,
+	MIPS_COP1_BC		= 0x08,
 };
 
 enum mips_op_spec3_bshfl {
@@ -203,6 +206,9 @@ enum mips_flt_format {
 	FLT_W			= 0x04,
 	FLT_L			= 0x05,
 	FLT_PS			= 0x06,
+
+	/* dummy, internal use only */
+	FLT_NONE		= 0xff,
 };
 
 enum mips_vdso_entry {
