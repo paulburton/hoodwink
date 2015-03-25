@@ -226,9 +226,6 @@ enum mips_flt_format {
 	FLT_W			= 0x04,
 	FLT_L			= 0x05,
 	FLT_PS			= 0x06,
-
-	/* dummy, internal use only */
-	FLT_NONE		= 0xff,
 };
 
 enum mips_flt_cond {

@@ -87,32 +87,33 @@ static int interp_cop1_xfer(const struct mips32_state *mips, struct mips32_delta
 
 	switch (op) {
 	case MIPS_COP1_MF:
-		debug_in_asm("mfc1\t%s, $f%d\n", reg_names[rt], fs);
+		debug_in_asm("mfc1\t%s, $f%u\n", reg_names[rt], fs);
 		mips32_delta_set(delta, GPR0 + rt, read_f32(mips, fs));
 		return 1;
 
 	case MIPS_COP1_CF:
-		debug_in_asm("cfc1\t%s, $f%d\n", reg_names[rt], fs);
+		debug_in_asm("cfc1\t%s, $%u\n", reg_names[rt], fs);
 		mips32_delta_set(delta, GPR0 + rt, 0);
 		return 1;
 
 	case MIPS_COP1_MFH:
-		debug_in_asm("mfhc1\t%s, $f%d\n", reg_names[rt], fs);
+		debug_in_asm("mfhc1\t%s, $f%u\n", reg_names[rt], fs);
 		mips32_delta_set(delta, GPR0 + rt, read_f64(mips, fs) >> 32);
 		return 1;
 
 	case MIPS_COP1_MT:
-		debug_in_asm("mtc1\t%s, $f%d\n", reg_names[rt], fs);
+		debug_in_asm("mtc1\t%s, $f%u\n", reg_names[rt], fs);
 		mips32_delta_set_f32(mips, delta, fs, mips->cpu.gpr[rt]);
 		return 1;
 
 	case MIPS_COP1_CT:
-		debug_in_asm("ctc1\t%s, $f%d\n", reg_names[rt], fs);
+		debug_in_asm("ctc1\t%s, $%u\n", reg_names[rt], fs);
 		return 1;
 
 	case MIPS_COP1_MTH:
-		debug_in_asm("mthc1\t%s, $f%d\n", reg_names[rt], fs);
-		mips32_delta_set_f64(mips, delta, fs, (uint32_t)read_f64(mips, fs) | ((uint64_t)mips->cpu.gpr[rt] << 32));
+		debug_in_asm("mthc1\t%s, $f%u\n", reg_names[rt], fs);
+		mips32_delta_set_f64(mips, delta, fs,
+				     ((uint64_t)mips->cpu.gpr[rt] << 32) | (uint32_t)read_f64(mips, fs));
 		return 1;
 
 	case MIPS_COP1_BC:
@@ -153,13 +154,8 @@ static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *del
 	unsigned fs = (inst >> 11) & 0x1f;
 	unsigned fd = (inst >> 6) & 0x1f;
 	unsigned op = (inst >> 0) & 0x3f;
-	unsigned cc, tf, result;
+	unsigned cc, tf, result, lt, eq, unordered;
 	enum mips_flt_cond cond;
-	enum ordering {
-		DONTCARE,
-		ORDERED,
-		UNORDERED,
-	};
 	union {
 		float f;
 		uint32_t u32;
@@ -209,69 +205,36 @@ static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *del
 				     float_cond_names[cond], float_fmt_names[fmt],
 				     fs, ft);
 
-		switch (cond) {
-		case FC_F:
-			result = 0;
+		switch (fmt) {
+		case FLT_S:
+			if (isnan(sgl[0].f) || isnan(sgl[1].f)) {
+				lt = eq = 0;
+				unordered = 1;
+			} else {
+				lt = sgl[0].f < sgl[1].f;
+				eq = sgl[0].f == sgl[1].f;
+				unordered = 0;
+			}
 			break;
 
-#define CASE_COND(cond, cop, ordering)						\
-		case cond:							\
-			switch (fmt) {						\
-			case FLT_S:						\
-				switch (ordering) {				\
-				case ORDERED:					\
-					result = !isnan(sgl[0].f);		\
-					result &= !isnan(sgl[1].f);		\
-					break;					\
-										\
-				case UNORDERED:					\
-					result = isnan(sgl[0].f); 		\
-					result |= isnan(sgl[1].f);		\
-					break;					\
-										\
-				case DONTCARE:					\
-					result = 0;				\
-					break;					\
-				}						\
-				result |= sgl[0].f cop sgl[1].f;		\
-				break;						\
-										\
-			case FLT_D:						\
-				switch (ordering) {				\
-				case ORDERED:					\
-					result = !isnan(dbl[0].d);		\
-					result &= !isnan(dbl[1].d);		\
-					break;					\
-										\
-				case UNORDERED:					\
-					result = isnan(dbl[0].d); 		\
-					result |= isnan(dbl[1].d);		\
-					break;					\
-										\
-				case DONTCARE:					\
-					result = 0;				\
-					break;					\
-				}						\
-				result |= dbl[0].d cop dbl[1].d;		\
-				break;						\
-										\
-			default:						\
-				return 0;					\
-			}							\
+		case FLT_D:
+			if (isnan(dbl[0].d) || isnan(dbl[1].d)) {
+				lt = eq = 0;
+				unordered = 1;
+			} else {
+				lt = dbl[0].d < dbl[1].d;
+				eq = dbl[0].d == dbl[1].d;
+				unordered = 0;
+			}
 			break;
-
-		CASE_COND(FC_EQ, ==, DONTCARE)
-		CASE_COND(FC_ULT, <, UNORDERED)
-		CASE_COND(FC_ULE, <=, UNORDERED)
-		CASE_COND(FC_LT, <, DONTCARE)
-		CASE_COND(FC_LE, <=, DONTCARE)
-
-#undef CASE_COND
 
 		default:
 			return 0;
 		}
 
+		result = (cond & (1 << 2)) && lt;
+		result |= (cond & (1 << 1)) && eq;
+		result |= (cond & (1 << 0)) && unordered;
 		if (result)
 			mips32_delta_set(delta, FCC, mips->cpu.fcc | (1 << cc));
 		else
@@ -1095,7 +1058,10 @@ void frontend_interp_writeback(struct mips32_state *mips, struct mips32_delta *d
 			break;
 
 		case FPR0...FPR31:
-			debug_delta("  $f%u = 0x%016x\n", (unsigned)(reg - FPR0), (unsigned)val);
+			if (mips32_fr(mips))
+				debug_delta("  $f%u = 0x%016x\n", (unsigned)(reg - FPR0), (unsigned)val);
+			else
+				debug_delta("  $f%u = 0x%08x\n", (unsigned)(reg - FPR0), (unsigned)val);
 			mips->cpu.fpr[reg - FPR0] = val;
 			break;
 
