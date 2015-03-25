@@ -29,6 +29,8 @@
 	__a < __b ? __a : __b;		\
 })
 
+#define isnan __builtin_isnan
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #endif /* __hoodwink_util_h__ */

@@ -7,12 +7,11 @@
  * published by the Free Software Foundation.
  */
 
-#include <stdbool.h>
-
 #include "debug.h"
 #include "frontend.h"
 #include "mips32.h"
 #include "syscall.h"
+#include "util.h"
 
 static const char *reg_names[32] = {
 	"zero", "at", "v0", "v1",
@@ -29,6 +28,25 @@ static const char *float_fmt_names[] = {
 	[FLT_W] = "w",
 	[FLT_L] = "l",
 	[FLT_PS] = "ps",
+};
+
+static const char *float_cond_names[] = {
+	[FC_F]		= "f",
+	[FC_UN]		= "un",
+	[FC_EQ]		= "eq",
+	[FC_UEQ]	= "ueq",
+	[FC_OLT]	= "olt",
+	[FC_ULT]	= "ult",
+	[FC_OLE]	= "ole",
+	[FC_ULE]	= "ule",
+	[FC_SF]		= "sf",
+	[FC_NGLE]	= "ngle",
+	[FC_SEQ]	= "seq",
+	[FC_NGL]	= "ngl",
+	[FC_LT]		= "lt",
+	[FC_NGE]	= "nge",
+	[FC_LE]		= "le",
+	[FC_NGT]	= "ngt",
 };
 
 static uint32_t se8(unsigned imm)
@@ -58,25 +76,90 @@ static uint64_t read_f64(const struct mips32_state *mips, unsigned fpr)
 	return ret;
 }
 
-void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_delta *delta, uint32_t pc_off, int *restart_on_signal)
+static int interp_cop1_xfer(const struct mips32_state *mips, struct mips32_delta *delta,
+			    uint32_t inst, int *do_ds)
 {
-	uint32_t pc = mips->cpu.pc + pc_off;
-	uint32_t inst = *(uint32_t *)(mips->sys.mem_base + pc);
-	const uint32_t *gpr = &mips->cpu.gpr[0];
-	const uint64_t *fpr = &mips->cpu.fpr[0];
-	uint32_t tgt;
-	uint64_t u64;
-	unsigned op = inst >> 26;
-	unsigned rs = (inst >> 21) & 0x1f;
+	unsigned op = (inst >> 21) & 0x1f;
 	unsigned rt = (inst >> 16) & 0x1f;
-	unsigned rd = (inst >> 11) & 0x1f;
-	unsigned sa = (inst >> 6) & 0x1f;
-	unsigned imm = inst & 0xffff;
-	unsigned msb, lsb, sz, fcc_bit, result, tf, nd;
-	int simm = se16(imm);
-	bool do_ds = false;
-	void *ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
-	enum mips_flt_format fmt, rfmt;
+	unsigned fs = (inst >> 11) & 0x1f;
+	unsigned cc, nd, tf;
+	uint32_t tgt;
+
+	switch (op) {
+	case MIPS_COP1_MF:
+		debug_in_asm("mfc1\t%s, $f%d\n", reg_names[rt], fs);
+		mips32_delta_set(delta, GPR0 + rt, read_f32(mips, fs));
+		return 1;
+
+	case MIPS_COP1_CF:
+		debug_in_asm("cfc1\t%s, $f%d\n", reg_names[rt], fs);
+		mips32_delta_set(delta, GPR0 + rt, 0);
+		return 1;
+
+	case MIPS_COP1_MFH:
+		debug_in_asm("mfhc1\t%s, $f%d\n", reg_names[rt], fs);
+		mips32_delta_set(delta, GPR0 + rt, read_f64(mips, fs) >> 32);
+		return 1;
+
+	case MIPS_COP1_MT:
+		debug_in_asm("mtc1\t%s, $f%d\n", reg_names[rt], fs);
+		mips32_delta_set_f32(mips, delta, fs, mips->cpu.gpr[rt]);
+		return 1;
+
+	case MIPS_COP1_CT:
+		debug_in_asm("ctc1\t%s, $f%d\n", reg_names[rt], fs);
+		return 1;
+
+	case MIPS_COP1_MTH:
+		debug_in_asm("mthc1\t%s, $f%d\n", reg_names[rt], fs);
+		mips32_delta_set_f64(mips, delta, fs, (uint32_t)read_f64(mips, fs) | ((uint64_t)mips->cpu.gpr[rt] << 32));
+		return 1;
+
+	case MIPS_COP1_BC:
+		cc = (inst >> 18) & 0x7;
+		nd = (inst >> 17) & 0x1;
+		tf = (inst >> 16) & 0x1;
+		tgt = delta->next_pc + (se16(inst & 0xffff) << 2);
+
+		if (cc)
+			debug_in_asm("bc1%s%s\t%u, 0x%x\n",
+				     tf ? "t" : "f",
+				     nd ? "l" : "",
+				     cc, tgt);
+		else
+			debug_in_asm("bc1%s%s\t0x%x\n",
+				     tf ? "t" : "f",
+				     nd ? "l" : "",
+				     tgt);
+
+		if (((mips->cpu.fcc >> cc) & 0x1) == tf) {
+			delta->next_pc = tgt;
+			*do_ds = 1;
+		}
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
+static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *delta,
+		       uint32_t inst, int *do_ds)
+{
+	unsigned is_xfer = ((inst >> 25) & 0x1) == 0;
+	const enum mips_flt_format fmt = (inst >> 21) & 0xf;
+	enum mips_flt_format rfmt = fmt;
+	unsigned ft = (inst >> 16) & 0x1f;
+	unsigned fs = (inst >> 11) & 0x1f;
+	unsigned fd = (inst >> 6) & 0x1f;
+	unsigned op = (inst >> 0) & 0x3f;
+	unsigned cc, tf, result;
+	enum mips_flt_cond cond;
+	enum ordering {
+		DONTCARE,
+		ORDERED,
+		UNORDERED,
+	};
 	union {
 		float f;
 		uint32_t u32;
@@ -85,6 +168,304 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		double d;
 		uint64_t u64;
 	} dbl[2];
+
+	if (is_xfer)
+		return interp_cop1_xfer(mips, delta, inst, do_ds);
+
+	switch (fmt) {
+	case FLT_S:
+	case FLT_W:
+		sgl[0].u32 = read_f32(mips, fs);
+		sgl[1].u32 = read_f32(mips, ft);
+
+		/* shut up gcc */
+		dbl[0].u64 = dbl[1].u64 = 0;
+		break;
+
+	case FLT_D:
+	case FLT_L:
+	case FLT_PS:
+		dbl[0].u64 = read_f64(mips, fs);
+		dbl[1].u64 = read_f64(mips, ft);
+
+		/* shut up gcc */
+		sgl[0].u32 = sgl[1].u32 = 0;
+		break;
+
+	default:
+		return 0;
+	}
+
+	if ((op & MIPS_COP1_C) == MIPS_COP1_C) {
+		cond = op & 0xf;
+		cc = (inst >> 8) & 0x7;
+
+		if (cc)
+			debug_in_asm("c.%s.%s\t%u, $f%u, $f%u\n",
+				     float_cond_names[cond], float_fmt_names[fmt],
+				     cc, fs, ft);
+		else
+			debug_in_asm("c.%s.%s\t$f%u, $f%u\n",
+				     float_cond_names[cond], float_fmt_names[fmt],
+				     fs, ft);
+
+		switch (cond) {
+		case FC_F:
+			result = 0;
+			break;
+
+#define CASE_COND(cond, cop, ordering)						\
+		case cond:							\
+			switch (fmt) {						\
+			case FLT_S:						\
+				switch (ordering) {				\
+				case ORDERED:					\
+					result = !isnan(sgl[0].f);		\
+					result &= !isnan(sgl[1].f);		\
+					break;					\
+										\
+				case UNORDERED:					\
+					result = isnan(sgl[0].f); 		\
+					result |= isnan(sgl[1].f);		\
+					break;					\
+										\
+				case DONTCARE:					\
+					result = 0;				\
+					break;					\
+				}						\
+				result |= sgl[0].f cop sgl[1].f;		\
+				break;						\
+										\
+			case FLT_D:						\
+				switch (ordering) {				\
+				case ORDERED:					\
+					result = !isnan(dbl[0].d);		\
+					result &= !isnan(dbl[1].d);		\
+					break;					\
+										\
+				case UNORDERED:					\
+					result = isnan(dbl[0].d); 		\
+					result |= isnan(dbl[1].d);		\
+					break;					\
+										\
+				case DONTCARE:					\
+					result = 0;				\
+					break;					\
+				}						\
+				result |= dbl[0].d cop dbl[1].d;		\
+				break;						\
+										\
+			default:						\
+				return 0;					\
+			}							\
+			break;
+
+		CASE_COND(FC_EQ, ==, DONTCARE)
+		CASE_COND(FC_ULT, <, UNORDERED)
+		CASE_COND(FC_ULE, <=, UNORDERED)
+		CASE_COND(FC_LT, <, DONTCARE)
+		CASE_COND(FC_LE, <=, DONTCARE)
+
+#undef CASE_COND
+
+		default:
+			return 0;
+		}
+
+		if (result)
+			mips32_delta_set(delta, FCC, mips->cpu.fcc | (1 << cc));
+		else
+			mips32_delta_set(delta, FCC, mips->cpu.fcc & ~(1 << cc));
+		return 1;
+	}
+
+	switch (op) {
+#define CASE_BINOP(op, name, cop)						\
+	case op:								\
+		debug_in_asm(name ".%s\t$f%u, $f%u, $f%u\n", 			\
+			     float_fmt_names[fmt], fd, fs, ft);			\
+		switch (fmt) {							\
+		case FLT_S:							\
+			sgl[0].f = sgl[0].f cop sgl[1].f;			\
+			break;							\
+										\
+		case FLT_D:							\
+			dbl[0].d = dbl[0].d cop dbl[1].d;			\
+			break;							\
+										\
+		default:							\
+			return 0;						\
+		}								\
+		break;
+
+	CASE_BINOP(MIPS_COP1_ADD, "add", +)
+	CASE_BINOP(MIPS_COP1_SUB, "sub", -)
+	CASE_BINOP(MIPS_COP1_MUL, "mul", *)
+	CASE_BINOP(MIPS_COP1_DIV, "div", /)
+
+#undef CASE_BINOP
+
+#define CASE_CONVOP(op, name, dest, _rfmt)					\
+	case op:								\
+		debug_in_asm(name ".%s\t$f%u, $f%u\n",				\
+			     float_fmt_names[fmt], fd, fs);			\
+		switch (fmt) {							\
+		case FLT_S:							\
+			dest = sgl[0].f;					\
+			break;							\
+										\
+		case FLT_D:							\
+			dest = dbl[0].d;					\
+			break;							\
+										\
+		case FLT_W:							\
+			dest = sgl[0].u32;					\
+			break;							\
+										\
+		case FLT_L:							\
+			dest = dbl[0].u64;					\
+			break;							\
+										\
+		default:							\
+			return 0;						\
+		}								\
+		rfmt = _rfmt;							\
+		break;
+
+	CASE_CONVOP(MIPS_COP1_TRUNC_W, "trunc.w", sgl[0].u32, FLT_W)
+	CASE_CONVOP(MIPS_COP1_CVT_S, "cvt.s", sgl[0].f, FLT_S)
+	CASE_CONVOP(MIPS_COP1_CVT_D, "cvt.d", dbl[0].d, FLT_D)
+
+#undef CASE_CONVOP
+
+	case MIPS_COP1_MOV:
+		debug_in_asm("mov.%s\t$f%u, $f%u\n", float_fmt_names[fmt], fd, fs);
+		break;
+
+	case MIPS_COP1_MOVF:
+		cc = (inst >> 18) & 0x7;
+		tf = (inst >> 16) & 0x1;
+
+		debug_in_asm("mov%s.%s\t$f%u, $f%u, %u\n",
+			     tf ? "t" : "f", float_fmt_names[fmt],
+			     fd, fs, cc);
+
+		if ((mips->cpu.fcc & (1 << cc)) != tf)
+			return 1;
+		break;
+
+	default:
+		return 0;
+	}
+
+	switch (rfmt) {
+	case FLT_S:
+	case FLT_W:
+		mips32_delta_set_f32(mips, delta, fd, sgl[0].u32);
+		return 1;
+
+	case FLT_D:
+	case FLT_L:
+	case FLT_PS:
+		mips32_delta_set_f64(mips, delta, fd, dbl[0].u64);
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
+static int interp_cop1x(const struct mips32_state *mips, struct mips32_delta *delta,
+			uint32_t inst, int *do_ds)
+{
+	const uint32_t *gpr = &mips->cpu.gpr[0];
+	unsigned fr = (inst >> 21) & 0x1f, base = fr;
+	unsigned ft = (inst >> 16) & 0x1f, index = ft;
+	unsigned fs = (inst >> 11) & 0x1f;
+	unsigned fd = (inst >> 6) & 0x1f;
+	unsigned op = (inst >> 0) & 0x3f;
+	enum mips_flt_format fmt;
+	void *ptr;
+	union {
+		float f;
+		uint32_t u32;
+	} sgl[2];
+	union {
+		double d;
+		uint64_t u64;
+	} dbl[2];
+
+	switch (op) {
+	case MIPS_COP1X_LDXC1:
+		debug_in_asm("ldcx1\t$f%u, %s(%s)\n", fd, reg_names[index], reg_names[base]);
+		ptr = mips->sys.mem_base + gpr[base] + gpr[index];
+		mips32_delta_set_f64(mips, delta, fd, *(uint64_t *)ptr);
+		return 1;
+
+	case MIPS_COP1X_SDXC1:
+		debug_in_asm("sdcx1\t$f%u, %s(%s)\n", fs, reg_names[index], reg_names[base]);
+		ptr = mips->sys.mem_base + gpr[base] + gpr[index];
+		*(uint64_t *)ptr = read_f64(mips, fs);
+		return 1;
+
+#define CASE_MACOP(op, name, cop)						\
+	case op##_S:								\
+	case op##_D:								\
+	case op##_PS:								\
+		fmt = inst & 0x7;						\
+		debug_in_asm(name ".%s\t$f%u, $f%u, $f%u, $f%u",		\
+			     float_fmt_names[fmt], fd, fr, fs, ft);		\
+										\
+		switch (fmt) {							\
+		case FLT_S:							\
+			sgl[0].u32 = read_f32(mips, fs);			\
+			sgl[1].u32 = read_f32(mips, ft);			\
+			sgl[0].f *= sgl[1].f;					\
+			sgl[1].u32 = read_f32(mips, fr);			\
+			sgl[0].f = sgl[0].f cop sgl[1].f;			\
+			mips32_delta_set_f32(mips, delta, fd, sgl[0].u32);	\
+			return 1;						\
+										\
+		case FLT_D:							\
+			dbl[0].u64 = read_f64(mips, fs);			\
+			dbl[1].u64 = read_f64(mips, ft);			\
+			dbl[0].d *= dbl[1].d;					\
+			dbl[1].u64 = read_f64(mips, fr);			\
+			dbl[0].d = dbl[0].d cop dbl[1].d;			\
+			mips32_delta_set_f64(mips, delta, fd, dbl[0].u64);	\
+			return 1;						\
+										\
+		default:							\
+			return 0;						\
+		}
+
+	CASE_MACOP(MIPS_COP1X_MADD, "madd", +)
+	CASE_MACOP(MIPS_COP1X_MSUB, "msub", -)
+
+#undef CASE_MACOP
+
+	default:
+		return 0;
+	}
+}
+
+void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_delta *delta, uint32_t pc_off, int *restart_on_signal)
+{
+	uint32_t pc = mips->cpu.pc + pc_off;
+	uint32_t inst = *(uint32_t *)(mips->sys.mem_base + pc);
+	const uint32_t *gpr = &mips->cpu.gpr[0];
+	uint32_t tgt;
+	uint64_t u64;
+	unsigned op = inst >> 26;
+	unsigned rs = (inst >> 21) & 0x1f;
+	unsigned rt = (inst >> 16) & 0x1f;
+	unsigned rd = (inst >> 11) & 0x1f;
+	unsigned sa = (inst >> 6) & 0x1f;
+	unsigned imm = inst & 0xffff;
+	unsigned msb, lsb, sz, cc;
+	int simm = se16(imm);
+	int do_ds = 0;
+	void *ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
 
 	debug_in_asm("interp %8x: %08x ", pc, inst);
 
@@ -100,6 +481,13 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			else
 				debug_in_asm("sll\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
 			mips32_delta_set(delta, GPR0 + rd, gpr[rt] << sa);
+			break;
+
+		case MIPS_SPEC_MOVF:
+			cc = (inst >> 18) & 0x7;
+			debug_in_asm("movf\t%s, %s, %u\n", reg_names[rd], reg_names[rs], cc);
+			if (!(mips->cpu.fcc & (1 << cc)))
+				mips32_delta_set(delta, GPR0 + rd, gpr[rs]);
 			break;
 
 		case MIPS_SPEC_SRL:
@@ -130,7 +518,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		case MIPS_SPEC_JR:
 			debug_in_asm("jr\t%s\n", reg_names[rs]);
 			delta->next_pc = gpr[rs];
-			do_ds = true;
+			do_ds = 1;
 			break;
 
 		case MIPS_SPEC_JALR:
@@ -140,7 +528,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 				debug_in_asm("jalr\t%s, %s\n", reg_names[rd], reg_names[rs]);
 			mips32_delta_set(delta, GPR0 + rd, delta->next_pc + 4);
 			delta->next_pc = gpr[rs];
-			do_ds = true;
+			do_ds = 1;
 			break;
 
 		case MIPS_SPEC_MOVZ:
@@ -302,7 +690,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			debug_in_asm("bltz\t%s, 0x%x\n", reg_names[rs], tgt);
 			if ((int32_t)gpr[rs] < 0) {
 				delta->next_pc = tgt;
-				do_ds = true;
+				do_ds = 1;
 			}
 			break;
 
@@ -311,7 +699,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			debug_in_asm("bgez\t%s, 0x%x\n", reg_names[rs], tgt);
 			if ((int32_t)gpr[rs] >= 0) {
 				delta->next_pc = tgt;
-				do_ds = true;
+				do_ds = 1;
 			}
 			break;
 
@@ -321,7 +709,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			mips32_delta_set(delta, GPR31, delta->next_pc + 4);
 			if ((int32_t)gpr[rs] < 0) {
 				delta->next_pc = tgt;
-				do_ds = true;
+				do_ds = 1;
 			}
 			break;
 
@@ -334,7 +722,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			mips32_delta_set(delta, GPR31, delta->next_pc + 4);
 			if ((int32_t)gpr[rs] >= 0) {
 				delta->next_pc = tgt;
-				do_ds = true;
+				do_ds = 1;
 			}
 			break;
 
@@ -349,7 +737,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		debug_in_asm("j\t0x%x\n", delta->next_pc);
 
-		do_ds = true;
+		do_ds = 1;
 		break;
 
 	case MIPS_OP_JAL:
@@ -360,7 +748,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		debug_in_asm("jal\t0x%x\n", delta->next_pc);
 
-		do_ds = true;
+		do_ds = 1;
 		break;
 
 	case MIPS_OP_BEQ:
@@ -374,7 +762,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		if (gpr[rs] == gpr[rt]) {
 			delta->next_pc = tgt;
-			do_ds = true;
+			do_ds = 1;
 		}
 		break;
 
@@ -389,7 +777,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		if (gpr[rs] != gpr[rt]) {
 			delta->next_pc = tgt;
-			do_ds = true;
+			do_ds = 1;
 		}
 		break;
 
@@ -399,7 +787,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		if ((int32_t)gpr[rs] <= 0) {
 			delta->next_pc = tgt;
-			do_ds = true;
+			do_ds = 1;
 		}
 		break;
 
@@ -409,7 +797,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		if ((int32_t)gpr[rs] > 0) {
 			delta->next_pc = tgt;
-			do_ds = true;
+			do_ds = 1;
 		}
 		break;
 
@@ -453,195 +841,13 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		break;
 
 	case MIPS_OP_COP1:
-		if (rs & 0x10) {
-			/* stop GCC complaining... */
-			sgl[0].u32 = sgl[1].u32 = 0;
-			dbl[0].u64 = dbl[1].u64 = 0;
+		if (!interp_cop1(mips, delta, inst, &do_ds))
+			goto ri;
+		break;
 
-			fmt = rfmt = rs & 0xf;
-			switch (fmt) {
-			case FLT_S:
-			case FLT_W:
-				sgl[0].u32 = read_f32(mips, rd);
-				sgl[1].u32 = read_f32(mips, rt);
-				break;
-
-			case FLT_D:
-			case FLT_L:
-			case FLT_PS:
-				dbl[0].u64 = read_f64(mips, rd);
-				dbl[1].u64 = read_f64(mips, rt);
-				break;
-
-			default:
-				goto ri;
-			}
-
-			op = inst & 0x3f;
-			switch (op) {
-			case MIPS_COP1_MUL:
-				debug_in_asm("mul.%s\t$f%u, $f%u, $f%u\n", float_fmt_names[fmt], sa, rd, rt);
-				switch (fmt) {
-				case FLT_S:
-					sgl[0].f *= sgl[1].f;
-					break;
-
-				case FLT_D:
-					dbl[0].d *= dbl[1].d;
-					break;
-
-				default:
-					goto ri;
-				}
-				break;
-
-			case MIPS_COP1_DIV:
-				debug_in_asm("div.%s\t$f%u, $f%u, $f%u\n", float_fmt_names[fmt], sa, rd, rt);
-				switch (fmt) {
-				case FLT_S:
-					sgl[0].f /= sgl[1].f;
-					break;
-
-				case FLT_D:
-					dbl[0].d /= dbl[1].d;
-					break;
-
-				default:
-					goto ri;
-				}
-				break;
-
-			case MIPS_COP1_MOV:
-				debug_in_asm("mov.%s\t$f%u, $f%u\n", float_fmt_names[fmt], sa, rd);
-				break;
-
-			case MIPS_COP1_CVT_S:
-				debug_in_asm("cvt.s.%s\t$f%u, $f%u\n", float_fmt_names[fmt], sa, rd);
-				switch (fmt) {
-				case FLT_D:
-					sgl[0].f = dbl[0].d;
-					break;
-
-				case FLT_W:
-					sgl[0].f = sgl[0].u32;
-					break;
-
-				default:
-					goto ri;
-				}
-				rfmt = FLT_S;
-				break;
-
-			case MIPS_COP1_CVT_D:
-				debug_in_asm("cvt.d.%s\t$f%u, $f%u\n", float_fmt_names[fmt], sa, rd);
-				switch (fmt) {
-				case FLT_S:
-					dbl[0].d = sgl[0].f;
-					break;
-
-				default:
-					goto ri;
-				}
-				rfmt = FLT_D;
-				break;
-
-			case MIPS_COP1_C_LT:
-				fcc_bit = (inst >> 8) & 0x7;
-
-				if (fcc_bit)
-					debug_in_asm("c.lt.%s\t%u, $f%u, $f%u\n", float_fmt_names[fmt],
-						     fcc_bit, rd, rt);
-				else
-					debug_in_asm("c.lt.%s\t$f%u, $f%u\n", float_fmt_names[fmt], rd, rt);
-
-				switch (fmt) {
-				case FLT_S:
-					result = sgl[0].f < sgl[1].f;
-					break;
-
-				case FLT_D:
-					result = dbl[0].d < dbl[1].d;
-					break;
-
-				default:
-					goto ri;
-				}
-
-				if (result)
-					mips32_delta_set(delta, FCC, mips->cpu.fcc | (1 << fcc_bit));
-				else
-					mips32_delta_set(delta, FCC, mips->cpu.fcc & ~(1 << fcc_bit));
-
-				rfmt = FLT_NONE;
-				break;
-
-			default:
-				goto ri;
-			}
-
-			switch (rfmt) {
-			case FLT_S:
-			case FLT_W:
-				mips32_delta_set_f32(mips, delta, sa, sgl[0].u32);
-				break;
-
-			case FLT_D:
-			case FLT_L:
-			case FLT_PS:
-				mips32_delta_set_f64(mips, delta, sa, dbl[0].u64);
-				break;
-
-			case FLT_NONE:
-				break;
-
-			default:
-				goto ri;
-			}
-		} else {
-			op = rs;
-			switch (op) {
-			case MIPS_COP1_MF:
-				debug_in_asm("mfc1\t%s, $f%d\n", reg_names[rt], rd);
-				mips32_delta_set(delta, GPR0 + rt, (uint32_t)fpr[rd]);
-				break;
-
-			case MIPS_COP1_CF:
-				debug_in_asm("cfc1\t%s, $f%d\n", reg_names[rt], rd);
-				mips32_delta_set(delta, GPR0 + rt, 0);
-				break;
-
-			case MIPS_COP1_MT:
-				debug_in_asm("mtc1\t%s, $f%d\n", reg_names[rt], rd);
-				mips32_delta_set_f32(mips, delta, rd, gpr[rt]);
-				break;
-
-			case MIPS_COP1_BC:
-				tgt = delta->next_pc + (simm << 2);
-				fcc_bit = (inst >> 18) & 0x7;
-				nd = (inst >> 17) & 0x1;
-				tf = (inst >> 16) & 0x1;
-
-				if (fcc_bit)
-					debug_in_asm("bc1%s%s\t%u, 0x%x\n",
-						     tf ? "t" : "f",
-						     nd ? "l" : "",
-						     fcc_bit, tgt);
-				else
-					debug_in_asm("bc1%s%s\t0x%x\n",
-						     tf ? "t" : "f",
-						     nd ? "l" : "",
-						     tgt);
-
-				if (((mips->cpu.fcc >> fcc_bit) & 0x1) == tf) {
-					delta->next_pc = tgt;
-					do_ds = true;
-				}
-				break;
-
-			default:
-				goto ri;
-			}
-		}
+	case MIPS_OP_COP1X:
+		if (!interp_cop1x(mips, delta, inst, &do_ds))
+			goto ri;
 		break;
 
 	case MIPS_OP_BEQL:
@@ -655,7 +861,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		if (gpr[rs] == gpr[rt]) {
 			delta->next_pc = tgt;
-			do_ds = true;
+			do_ds = 1;
 		}
 		break;
 
@@ -670,7 +876,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		if (gpr[rs] != gpr[rt]) {
 			delta->next_pc = tgt;
-			do_ds = true;
+			do_ds = 1;
 		}
 		break;
 
@@ -828,7 +1034,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 	case MIPS_OP_LWC1:
 		debug_in_asm("lwc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
-		mips32_delta_set(delta, FPR0 + rt, *(uint32_t *)ptr);
+		mips32_delta_set_f32(mips, delta, rt, *(uint32_t *)ptr);
 		break;
 
 	case MIPS_OP_PREF:
@@ -836,8 +1042,8 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		break;
 
 	case MIPS_OP_LDC1:
-		debug_in_asm("ldc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
-		mips32_delta_set(delta, FPR0 + rt, *(uint64_t *)ptr);
+		debug_in_asm("ldc1\t$f%u, %d(%s)\n", rt, simm, reg_names[rs]);
+		mips32_delta_set_f64(mips, delta, rt, *(uint64_t *)ptr);
 		break;
 
 	case MIPS_OP_SC:
@@ -848,13 +1054,13 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		break;
 
 	case MIPS_OP_SWC1:
-		debug_in_asm("swc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
-		*(uint32_t *)ptr = fpr[rt];
+		debug_in_asm("swc1\t$f%u, %d(%s)\n", rt, simm, reg_names[rs]);
+		*(uint32_t *)ptr = read_f32(mips, rt);
 		break;
 
 	case MIPS_OP_SDC1:
-		debug_in_asm("sdc1\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
-		*(uint64_t *)ptr = fpr[rt];
+		debug_in_asm("sdc1\t$f%u, %d(%s)\n", rt, simm, reg_names[rs]);
+		*(uint64_t *)ptr = read_f64(mips, rt);
 		break;
 
 	default:

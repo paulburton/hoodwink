@@ -101,6 +101,7 @@ enum mips_op {
 	MIPS_OP_XORI		= 0x0e,
 	MIPS_OP_LUI		= 0x0f,
 	MIPS_OP_COP1		= 0x11,
+	MIPS_OP_COP1X		= 0x13,
 	MIPS_OP_BEQL		= 0x14,
 	MIPS_OP_BNEL		= 0x15,
 	MIPS_OP_SPEC2		= 0x1c,
@@ -135,6 +136,7 @@ enum mips_op_regimm {
 
 enum mips_op_spec {
 	MIPS_SPEC_SLL		= 0x00,
+	MIPS_SPEC_MOVF		= 0x01,
 	MIPS_SPEC_SRL		= 0x02,
 	MIPS_SPEC_SRA		= 0x03,
 	MIPS_SPEC_SLLV		= 0x04,
@@ -180,19 +182,37 @@ enum mips_op_spec3 {
 };
 
 enum mips_op_cop1 {
+	MIPS_COP1_ADD		= 0x00,
+	MIPS_COP1_SUB		= 0x01,
 	MIPS_COP1_MUL		= 0x02,
 	MIPS_COP1_DIV		= 0x03,
 	MIPS_COP1_MOV		= 0x06,
+	MIPS_COP1_TRUNC_W	= 0x0d,
+	MIPS_COP1_MOVF		= 0x11,
 	MIPS_COP1_CVT_S		= 0x20,
 	MIPS_COP1_CVT_D		= 0x21,
-	MIPS_COP1_C_LT		= 0x3c,
+	MIPS_COP1_C		= 0x30,
 };
 
 enum mips_op_cop1_xfer {
 	MIPS_COP1_MF		= 0x00,
 	MIPS_COP1_CF		= 0x02,
+	MIPS_COP1_MFH		= 0x03,
 	MIPS_COP1_MT		= 0x04,
+	MIPS_COP1_CT		= 0x06,
+	MIPS_COP1_MTH		= 0x07,
 	MIPS_COP1_BC		= 0x08,
+};
+
+enum mips_op_cop1x {
+	MIPS_COP1X_LDXC1	= 0x01,
+	MIPS_COP1X_SDXC1	= 0x09,
+	MIPS_COP1X_MADD_S	= 0x20,
+	MIPS_COP1X_MADD_D	= 0x21,
+	MIPS_COP1X_MADD_PS	= 0x26,
+	MIPS_COP1X_MSUB_S	= 0x28,
+	MIPS_COP1X_MSUB_D	= 0x29,
+	MIPS_COP1X_MSUB_PS	= 0x2e,
 };
 
 enum mips_op_spec3_bshfl {
@@ -209,6 +229,25 @@ enum mips_flt_format {
 
 	/* dummy, internal use only */
 	FLT_NONE		= 0xff,
+};
+
+enum mips_flt_cond {
+	FC_F			= 0x0,
+	FC_UN			= 0x1,
+	FC_EQ			= 0x2,
+	FC_UEQ			= 0x3,
+	FC_OLT			= 0x4,
+	FC_ULT			= 0x5,
+	FC_OLE			= 0x6,
+	FC_ULE			= 0x7,
+	FC_SF			= 0x8,
+	FC_NGLE			= 0x9,
+	FC_SEQ			= 0xa,
+	FC_NGL			= 0xb,
+	FC_LT			= 0xc,
+	FC_NGE			= 0xd,
+	FC_LE			= 0xe,
+	FC_NGT			= 0xf,
 };
 
 enum mips_vdso_entry {
