@@ -158,10 +158,12 @@ static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *del
 	enum mips_flt_cond cond;
 	union {
 		float f;
+		int32_t i32;
 		uint32_t u32;
 	} sgl[2];
 	union {
 		double d;
+		int64_t i64;
 		uint64_t u64;
 	} dbl[2];
 
@@ -282,11 +284,11 @@ static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *del
 			break;							\
 										\
 		case FLT_W:							\
-			dest = sgl[0].u32;					\
+			dest = sgl[0].i32;					\
 			break;							\
 										\
 		case FLT_L:							\
-			dest = dbl[0].u64;					\
+			dest = dbl[0].i64;					\
 			break;							\
 										\
 		default:							\
@@ -313,7 +315,7 @@ static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *del
 			     tf ? "t" : "f", float_fmt_names[fmt],
 			     fd, fs, cc);
 
-		if ((mips->cpu.fcc & (1 << cc)) != tf)
+		if (((mips->cpu.fcc >> cc) & 0x1) != tf)
 			return 1;
 		break;
 
@@ -425,7 +427,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	unsigned rd = (inst >> 11) & 0x1f;
 	unsigned sa = (inst >> 6) & 0x1f;
 	unsigned imm = inst & 0xffff;
-	unsigned msb, lsb, sz, cc;
+	unsigned msb, lsb, sz, cc, tf;
 	int simm = se16(imm);
 	int do_ds = 0;
 	void *ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -446,10 +448,12 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			mips32_delta_set(delta, GPR0 + rd, gpr[rt] << sa);
 			break;
 
-		case MIPS_SPEC_MOVF:
+		case MIPS_SPEC_MOVCI:
 			cc = (inst >> 18) & 0x7;
-			debug_in_asm("movf\t%s, %s, %u\n", reg_names[rd], reg_names[rs], cc);
-			if (!(mips->cpu.fcc & (1 << cc)))
+			tf = (inst >> 16) & 0x1;
+			debug_in_asm("mov%s\t%s, %s, %u\n", tf ? "t" : "f",
+				     reg_names[rd], reg_names[rs], cc);
+			if (((mips->cpu.fcc >> cc) & 0x1) == tf)
 				mips32_delta_set(delta, GPR0 + rd, gpr[rs]);
 			break;
 

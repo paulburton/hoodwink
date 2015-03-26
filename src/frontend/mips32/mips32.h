@@ -136,7 +136,7 @@ enum mips_op_regimm {
 
 enum mips_op_spec {
 	MIPS_SPEC_SLL		= 0x00,
-	MIPS_SPEC_MOVF		= 0x01,
+	MIPS_SPEC_MOVCI		= 0x01,
 	MIPS_SPEC_SRL		= 0x02,
 	MIPS_SPEC_SRA		= 0x03,
 	MIPS_SPEC_SLLV		= 0x04,
