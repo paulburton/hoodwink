@@ -421,6 +421,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	const uint32_t *gpr = &mips->cpu.gpr[0];
 	uint32_t tgt;
 	uint64_t u64;
+	int32_t i32;
 	unsigned op = inst >> 26;
 	unsigned rs = (inst >> 21) & 0x1f;
 	unsigned rt = (inst >> 16) & 0x1f;
@@ -519,7 +520,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			else
 				debug_in_asm("\n");
 
-			tgt = frontend_syscall_invoke(&mips->sys, gpr[2], NULL, delta);
+			i32 = frontend_syscall_invoke(&mips->sys, gpr[2], NULL, delta);
 
 			switch (gpr[2]) {
 			case SYSCALL_NR_FRONT(sigreturn):
@@ -527,8 +528,13 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 				break;
 
 			default:
-				mips32_delta_set(delta, GPR0 + 2, tgt);
-				mips32_delta_set(delta, GPR0 + 7, IS_ERROR(tgt));
+				if (IS_ERROR((uint32_t)i32)) {
+					mips32_delta_set(delta, GPR0 + 2, -i32);
+					mips32_delta_set(delta, GPR0 + 7, 1);
+				} else {
+					mips32_delta_set(delta, GPR0 + 2, i32);
+					mips32_delta_set(delta, GPR0 + 7, 0);
+				}
 			}
 			break;
 
