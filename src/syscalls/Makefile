@@ -34,6 +34,7 @@ local_c_source := \
 	time.c \
 	umask.c \
 	uname.c \
+	unlink.c \
 	waitpid.c \
 	write.c \
 	xattr.c
