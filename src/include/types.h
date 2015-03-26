@@ -125,7 +125,13 @@
 	static const int prefix##O_WRONLY = arch##_O_WRONLY;		\
 	static const int prefix##O_RDWR = arch##_O_RDWR;		\
 	static const int prefix##O_CREAT = arch##_O_CREAT;		\
+	static const int prefix##O_EXCL = arch##_O_EXCL;		\
 	static const int prefix##O_TRUNC = arch##_O_TRUNC;		\
+	static const int prefix##O_APPEND = arch##_O_APPEND;		\
+	static const int prefix##O_NONBLOCK = arch##_O_NONBLOCK;	\
+	static const int prefix##O_LARGEFILE = arch##_O_LARGEFILE;	\
+	static const int prefix##O_DIRECTORY = arch##_O_DIRECTORY;	\
+	static const int prefix##O_CLOEXEC = arch##_O_CLOEXEC;		\
 	static const int prefix##PROT_NONE = arch##_PROT_NONE;		\
 	static const int prefix##PROT_EXEC = arch##_PROT_EXEC;		\
 	static const int prefix##PROT_READ = arch##_PROT_READ;		\
@@ -210,6 +216,42 @@ typedef struct linux_dirent64 {
 	_____GEN_FLAG_TRANSLATOR(g)					\
 	_____GEN_FLAG_TRANSLATOR(h)
 
+#define ____GEN_FLAG_TRANSLATOR9(a,b,c,d,e,f,g,h,i)			\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)					\
+	_____GEN_FLAG_TRANSLATOR(f)					\
+	_____GEN_FLAG_TRANSLATOR(g)					\
+	_____GEN_FLAG_TRANSLATOR(h)					\
+	_____GEN_FLAG_TRANSLATOR(i)
+
+#define ____GEN_FLAG_TRANSLATOR10(a,b,c,d,e,f,g,h,i,j)			\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)					\
+	_____GEN_FLAG_TRANSLATOR(f)					\
+	_____GEN_FLAG_TRANSLATOR(g)					\
+	_____GEN_FLAG_TRANSLATOR(h)					\
+	_____GEN_FLAG_TRANSLATOR(i)					\
+	_____GEN_FLAG_TRANSLATOR(j)
+
+#define ____GEN_FLAG_TRANSLATOR11(a,b,c,d,e,f,g,h,i,j,k)		\
+	_____GEN_FLAG_TRANSLATOR(a)					\
+	_____GEN_FLAG_TRANSLATOR(b)					\
+	_____GEN_FLAG_TRANSLATOR(c)					\
+	_____GEN_FLAG_TRANSLATOR(d)					\
+	_____GEN_FLAG_TRANSLATOR(e)					\
+	_____GEN_FLAG_TRANSLATOR(f)					\
+	_____GEN_FLAG_TRANSLATOR(g)					\
+	_____GEN_FLAG_TRANSLATOR(h)					\
+	_____GEN_FLAG_TRANSLATOR(i)					\
+	_____GEN_FLAG_TRANSLATOR(j)					\
+	_____GEN_FLAG_TRANSLATOR(k)
+
 #define ___GEN_FLAG_TRANSLATOR(M, ...)					\
 	M(__VA_ARGS__)
 
@@ -236,6 +278,19 @@ GEN_FLAG_TRANSLATOR(mmap_flags, int_t,
 	MAP_FIXED,
 	MAP_PRIVATE,
 	MAP_SHARED)
+
+GEN_FLAG_TRANSLATOR(open_flags, int_t,
+	O_APPEND,
+	O_CLOEXEC,
+	O_CREAT,
+	O_DIRECTORY,
+	O_EXCL,
+	O_LARGEFILE,
+	O_NONBLOCK,
+	O_RDONLY,
+	O_RDWR,
+	O_TRUNC,
+	O_WRONLY)
 
 GEN_FLAG_TRANSLATOR(prot, int_t,
 	PROT_EXEC,
