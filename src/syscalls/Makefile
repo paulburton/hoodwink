@@ -32,6 +32,7 @@ local_c_source := \
 	stat.c \
 	tgkill.c \
 	time.c \
+	umask.c \
 	uname.c \
 	waitpid.c \
 	write.c \
