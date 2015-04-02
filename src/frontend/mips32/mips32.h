@@ -104,6 +104,7 @@ enum mips_op {
 	MIPS_OP_COP1X		= 0x13,
 	MIPS_OP_BEQL		= 0x14,
 	MIPS_OP_BNEL		= 0x15,
+	MIPS_OP_BGTZL		= 0x17,
 	MIPS_OP_SPEC2		= 0x1c,
 	MIPS_OP_SPEC3		= 0x1f,
 	MIPS_OP_LB		= 0x20,
@@ -130,6 +131,7 @@ enum mips_op {
 enum mips_op_regimm {
 	MIPS_REGIMM_BLTZ	= 0x00,
 	MIPS_REGIMM_BGEZ	= 0x01,
+	MIPS_REGIMM_BLTZL	= 0x02,
 	MIPS_REGIMM_BLTZAL	= 0x10,
 	MIPS_REGIMM_BGEZAL	= 0x11,
 };

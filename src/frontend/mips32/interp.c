@@ -703,6 +703,15 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			}
 			break;
 
+		case MIPS_REGIMM_BLTZL:
+			tgt = delta->next_pc + (simm << 2);
+			debug_in_asm("bltzl\t%s, 0x%x\n", reg_names[rs], tgt);
+			if ((int32_t)gpr[rs] < 0) {
+				delta->next_pc = tgt;
+				do_ds = 1;
+			}
+			break;
+
 		case MIPS_REGIMM_BLTZAL:
 			tgt = delta->next_pc + (simm << 2);
 			debug_in_asm("bltzal\t%s, 0x%x\n", reg_names[rs], tgt);
@@ -875,6 +884,16 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		debug_in_asm(", 0x%x\n", tgt);
 
 		if (gpr[rs] != gpr[rt]) {
+			delta->next_pc = tgt;
+			do_ds = 1;
+		}
+		break;
+
+	case MIPS_OP_BGTZL:
+		tgt = delta->next_pc + (simm << 2);
+		debug_in_asm("bgtzl\t%s, 0x%x\n", reg_names[rs], tgt);
+
+		if ((int32_t)gpr[rs] > 0) {
 			delta->next_pc = tgt;
 			do_ds = 1;
 		}
