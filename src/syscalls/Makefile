@@ -34,6 +34,7 @@ local_c_source := \
 	rt_sigaction.c \
 	socket.c \
 	stat.c \
+	statfs.c \
 	tgkill.c \
 	time.c \
 	umask.c \

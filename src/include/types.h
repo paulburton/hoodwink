@@ -116,6 +116,8 @@
 	typedef struct arch##_siginfo		prefix##siginfo_s;	\
 	typedef struct arch##_stat		prefix##stat_s;		\
 	typedef struct arch##_stat64		prefix##stat64_s;	\
+	typedef struct arch##_statfs		prefix##statfs_s;	\
+	typedef struct arch##_statfs64		prefix##statfs64_s;	\
 	typedef struct arch##_termios		prefix##termios_s;	\
 	typedef struct arch##_timespec		prefix##timespec_s;	\
 	typedef struct arch##_timeval		prefix##timeval_s;	\

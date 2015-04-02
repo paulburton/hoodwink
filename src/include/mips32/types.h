@@ -28,6 +28,10 @@ struct mips32_cmsghdr {
 	int32_t		cmsg_type;
 };
 
+typedef struct {
+	int32_t		val[2];
+} mips32_fsid_t;
+
 struct mips32_iovec {
 	uint32_t	iov_base;
 	uint32_t	iov_len;
@@ -136,6 +140,25 @@ struct mips32_stat64 {
 	uint32_t	st_blksize;
 	uint32_t	st_pad2;
 	uint64_t	st_blocks;
+};
+
+struct mips32_statfs {
+};
+
+struct mips32_statfs64 {
+	uint32_t	f_type;
+	uint32_t	f_bsize;
+	uint32_t	f_frsize;
+	uint32_t	__pad;
+	uint64_t	f_blocks;
+	uint64_t	f_bfree;
+	uint64_t	f_files;
+	uint64_t	f_ffree;
+	uint64_t	f_bavail;
+	mips32_fsid_t	f_fsid;
+	uint32_t	f_namelen;
+	uint32_t	f_flags;
+	uint32_t	f_spare[5];
 };
 
 struct mips32_termios {

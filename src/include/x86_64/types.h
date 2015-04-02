@@ -28,6 +28,10 @@ struct x86_64_cmsghdr {
 	int32_t		cmsg_type;
 };
 
+typedef struct {
+	int32_t		val[2];
+} x86_64_fsid_t;
+
 struct x86_64_iovec {
 	uint64_t	iov_base;
 	uint64_t	iov_len;
@@ -139,6 +143,24 @@ struct x86_64_stat {
 
 struct x86_64_stat64 {
 	/* dummy */
+};
+
+struct x86_64_statfs {
+	int64_t		f_type;
+	int64_t		f_bsize;
+	int64_t		f_blocks;
+	int64_t		f_bfree;
+	int64_t		f_bavail;
+	int64_t		f_files;
+	int64_t		f_ffree;
+	x86_64_fsid_t	f_fsid;
+	int64_t		f_namelen;
+	int64_t		f_frsize;
+	int64_t		f_flags;
+	int64_t		f_spare[4];
+};
+
+struct x86_64_statfs64 {
 };
 
 struct x86_64_termios {

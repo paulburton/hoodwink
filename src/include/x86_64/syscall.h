@@ -335,6 +335,7 @@
 #define X86_64_NR_recv		-1
 #define X86_64_NR_send		-1
 #define X86_64_NR_stat64	-1
+#define X86_64_NR_statfs64	-1
 #define X86_64_NR_waitpid	-1
 
 #ifndef __ASSEMBLER__
