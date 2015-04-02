@@ -157,116 +157,130 @@ typedef struct linux_dirent64 {
 	char		d_name[0];
 } linux_dirent64_s;
 
-#define _____GEN_FLAG_TRANSLATOR(flag)					\
+#define ____GEN_B2F_FLAG_TRANSLATOR0()
+#define ____GEN_F2B_FLAG_TRANSLATOR0()
+
+#define ____GEN_B2F_FLAG_TRANSLATOR1(flag)				\
+	if (b & flag)							\
+		f |= FRONT_##flag;					\
+	handled |= flag;
+
+#define ____GEN_F2B_FLAG_TRANSLATOR1(flag)				\
 	if (f & FRONT_##flag)						\
 		b |= flag;						\
 	handled |= FRONT_##flag;
 
-#define ____GEN_FLAG_TRANSLATOR0()
+#define ____GEN_B2F_FLAG_TRANSLATOR2(a,b)				\
+	____GEN_B2F_FLAG_TRANSLATOR1(a)					\
+	____GEN_B2F_FLAG_TRANSLATOR1(b)
 
-#define ____GEN_FLAG_TRANSLATOR1(a)					\
-	_____GEN_FLAG_TRANSLATOR(a)
+#define ____GEN_B2F_FLAG_TRANSLATOR3(a,b,c)				\
+	____GEN_B2F_FLAG_TRANSLATOR2(a,b)				\
+	____GEN_B2F_FLAG_TRANSLATOR1(c)
 
-#define ____GEN_FLAG_TRANSLATOR2(a)					\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)
+#define ____GEN_B2F_FLAG_TRANSLATOR4(a,b,c,d)				\
+	____GEN_B2F_FLAG_TRANSLATOR2(a,b)				\
+	____GEN_B2F_FLAG_TRANSLATOR2(c,d)
 
-#define ____GEN_FLAG_TRANSLATOR3(a,b,c)					\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)
+#define ____GEN_B2F_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	____GEN_B2F_FLAG_TRANSLATOR3(a,b,c)				\
+	____GEN_B2F_FLAG_TRANSLATOR2(d,e)
 
-#define ____GEN_FLAG_TRANSLATOR4(a,b,c,d)				\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)
+#define ____GEN_B2F_FLAG_TRANSLATOR6(a,b,c,d,e,f)			\
+	____GEN_B2F_FLAG_TRANSLATOR3(a,b,c)				\
+	____GEN_B2F_FLAG_TRANSLATOR3(d,e,f)
 
-#define ____GEN_FLAG_TRANSLATOR5(a,b,c,d,e)				\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)
+#define ____GEN_B2F_FLAG_TRANSLATOR7(a,b,c,d,e,f,g)			\
+	____GEN_B2F_FLAG_TRANSLATOR4(a,b,c,d)				\
+	____GEN_B2F_FLAG_TRANSLATOR3(e,f,g)
 
-#define ____GEN_FLAG_TRANSLATOR6(a,b,c,d,e,f)				\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)					\
-	_____GEN_FLAG_TRANSLATOR(f)
+#define ____GEN_B2F_FLAG_TRANSLATOR8(a,b,c,d,e,f,g,h)			\
+	____GEN_B2F_FLAG_TRANSLATOR4(a,b,c,d)				\
+	____GEN_B2F_FLAG_TRANSLATOR4(e,f,g,h)
 
-#define ____GEN_FLAG_TRANSLATOR7(a,b,c,d,e,f,g)				\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)					\
-	_____GEN_FLAG_TRANSLATOR(f)					\
-	_____GEN_FLAG_TRANSLATOR(g)
+#define ____GEN_B2F_FLAG_TRANSLATOR9(a,b,c,d,e,f,g,h,i)			\
+	____GEN_B2F_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	____GEN_B2F_FLAG_TRANSLATOR4(f,g,h,i)
 
-#define ____GEN_FLAG_TRANSLATOR8(a,b,c,d,e,f,g,h)			\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)					\
-	_____GEN_FLAG_TRANSLATOR(f)					\
-	_____GEN_FLAG_TRANSLATOR(g)					\
-	_____GEN_FLAG_TRANSLATOR(h)
+#define ____GEN_B2F_FLAG_TRANSLATOR10(a,b,c,d,e,f,g,h,i,j)		\
+	____GEN_B2F_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	____GEN_B2F_FLAG_TRANSLATOR5(f,g,h,i,j)
 
-#define ____GEN_FLAG_TRANSLATOR9(a,b,c,d,e,f,g,h,i)			\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)					\
-	_____GEN_FLAG_TRANSLATOR(f)					\
-	_____GEN_FLAG_TRANSLATOR(g)					\
-	_____GEN_FLAG_TRANSLATOR(h)					\
-	_____GEN_FLAG_TRANSLATOR(i)
+#define ____GEN_B2F_FLAG_TRANSLATOR11(a,b,c,d,e,f,g,h,i,j,k)		\
+	____GEN_B2F_FLAG_TRANSLATOR6(a,b,c,d,e,f)			\
+	____GEN_B2F_FLAG_TRANSLATOR5(g,h,i,j,k)
 
-#define ____GEN_FLAG_TRANSLATOR10(a,b,c,d,e,f,g,h,i,j)			\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)					\
-	_____GEN_FLAG_TRANSLATOR(f)					\
-	_____GEN_FLAG_TRANSLATOR(g)					\
-	_____GEN_FLAG_TRANSLATOR(h)					\
-	_____GEN_FLAG_TRANSLATOR(i)					\
-	_____GEN_FLAG_TRANSLATOR(j)
+#define ____GEN_F2B_FLAG_TRANSLATOR2(a,b)				\
+	____GEN_F2B_FLAG_TRANSLATOR1(a)					\
+	____GEN_F2B_FLAG_TRANSLATOR1(b)
 
-#define ____GEN_FLAG_TRANSLATOR11(a,b,c,d,e,f,g,h,i,j,k)		\
-	_____GEN_FLAG_TRANSLATOR(a)					\
-	_____GEN_FLAG_TRANSLATOR(b)					\
-	_____GEN_FLAG_TRANSLATOR(c)					\
-	_____GEN_FLAG_TRANSLATOR(d)					\
-	_____GEN_FLAG_TRANSLATOR(e)					\
-	_____GEN_FLAG_TRANSLATOR(f)					\
-	_____GEN_FLAG_TRANSLATOR(g)					\
-	_____GEN_FLAG_TRANSLATOR(h)					\
-	_____GEN_FLAG_TRANSLATOR(i)					\
-	_____GEN_FLAG_TRANSLATOR(j)					\
-	_____GEN_FLAG_TRANSLATOR(k)
+#define ____GEN_F2B_FLAG_TRANSLATOR3(a,b,c)				\
+	____GEN_F2B_FLAG_TRANSLATOR2(a,b)				\
+	____GEN_F2B_FLAG_TRANSLATOR1(c)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR4(a,b,c,d)				\
+	____GEN_F2B_FLAG_TRANSLATOR2(a,b)				\
+	____GEN_F2B_FLAG_TRANSLATOR2(c,d)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	____GEN_F2B_FLAG_TRANSLATOR3(a,b,c)				\
+	____GEN_F2B_FLAG_TRANSLATOR2(d,e)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR6(a,b,c,d,e,f)			\
+	____GEN_F2B_FLAG_TRANSLATOR3(a,b,c)				\
+	____GEN_F2B_FLAG_TRANSLATOR3(d,e,f)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR7(a,b,c,d,e,f,g)			\
+	____GEN_F2B_FLAG_TRANSLATOR4(a,b,c,d)				\
+	____GEN_F2B_FLAG_TRANSLATOR3(e,f,g)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR8(a,b,c,d,e,f,g,h)			\
+	____GEN_F2B_FLAG_TRANSLATOR4(a,b,c,d)				\
+	____GEN_F2B_FLAG_TRANSLATOR4(e,f,g,h)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR9(a,b,c,d,e,f,g,h,i)			\
+	____GEN_F2B_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	____GEN_F2B_FLAG_TRANSLATOR4(f,g,h,i)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR10(a,b,c,d,e,f,g,h,i,j)		\
+	____GEN_F2B_FLAG_TRANSLATOR5(a,b,c,d,e)				\
+	____GEN_F2B_FLAG_TRANSLATOR5(f,g,h,i,j)
+
+#define ____GEN_F2B_FLAG_TRANSLATOR11(a,b,c,d,e,f,g,h,i,j,k)		\
+	____GEN_F2B_FLAG_TRANSLATOR6(a,b,c,d,e,f)			\
+	____GEN_F2B_FLAG_TRANSLATOR5(g,h,i,j,k)
 
 #define ___GEN_FLAG_TRANSLATOR(M, ...)					\
 	M(__VA_ARGS__)
 
-#define __GEN_FLAG_TRANSLATOR(nflags, ...)				\
-	___GEN_FLAG_TRANSLATOR(CAT(____GEN_FLAG_TRANSLATOR, VA_NUM_ARGS_NOZERO(__VA_ARGS__)), __VA_ARGS__)
+#define __GEN_B2F_FLAG_TRANSLATOR(nflags, ...)				\
+	___GEN_FLAG_TRANSLATOR(CAT(____GEN_B2F_FLAG_TRANSLATOR, VA_NUM_ARGS_NOZERO(__VA_ARGS__)), __VA_ARGS__)
 
-#define _GEN_FLAG_TRANSLATOR(...)					\
-	__GEN_FLAG_TRANSLATOR(VA_NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
+#define _GEN_B2F_FLAG_TRANSLATOR(...)					\
+	__GEN_B2F_FLAG_TRANSLATOR(VA_NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
+
+#define __GEN_F2B_FLAG_TRANSLATOR(nflags, ...)				\
+	___GEN_FLAG_TRANSLATOR(CAT(____GEN_F2B_FLAG_TRANSLATOR, VA_NUM_ARGS_NOZERO(__VA_ARGS__)), __VA_ARGS__)
+
+#define _GEN_F2B_FLAG_TRANSLATOR(...)					\
+	__GEN_F2B_FLAG_TRANSLATOR(VA_NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
 
 #define GEN_FLAG_TRANSLATOR(name, type, ...)				\
+static inline front_##type b2f_##name(type b, int *allrec)		\
+{									\
+	type handled = 0;						\
+	front_##type f = 0;						\
+	_GEN_B2F_FLAG_TRANSLATOR(__VA_ARGS__)				\
+	if (allrec)							\
+		*allrec = (b & handled) == b;				\
+	return f;							\
+}									\
+									\
 static inline type f2b_##name(front_##type f, int *allrec)		\
 {									\
 	front_##type handled = 0;					\
 	type b = 0;							\
-	_GEN_FLAG_TRANSLATOR(__VA_ARGS__)				\
+	_GEN_F2B_FLAG_TRANSLATOR(__VA_ARGS__)				\
 	if (allrec)							\
 		*allrec = (f & handled) == f;				\
 	return b;							\
