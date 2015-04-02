@@ -98,14 +98,17 @@
 	typedef arch##_mode_t			prefix##mode_t;		\
 	typedef arch##_off_t			prefix##off_t;		\
 	typedef arch##_pid_t			prefix##pid_t;		\
+	typedef arch##_short_t			prefix##short_t;	\
 	typedef arch##_sigset_t			prefix##sigset_t;	\
 	typedef arch##_size_t			prefix##size_t;		\
 	typedef arch##_ssize_t			prefix##ssize_t;	\
 	typedef arch##_time_t			prefix##time_t;		\
 	typedef arch##_uid_t			prefix##uid_t;		\
 	typedef arch##_ulong_t			prefix##ulong_t;	\
+	typedef struct arch##_cmsghdr		prefix##cmsghdr_s;	\
 	typedef struct arch##_iovec		prefix##iovec_s;	\
 	typedef struct arch##_linux_dirent	prefix##linux_dirent_s;	\
+	typedef struct arch##_mmsghdr		prefix##mmsghdr_s;	\
 	typedef struct arch##_rt_sigframe	prefix##rt_sigframe_s;	\
 	typedef struct arch##_sigaction		prefix##sigaction_s;	\
 	typedef struct arch##_sigaltstack	prefix##sigaltstack_s;	\
@@ -176,6 +179,11 @@ typedef struct pollfd {
 	int16_t		events;
 	int16_t		revents;
 } pollfd_s;
+
+typedef struct sockaddr {
+	uint16_t	sa_family;
+	char		sa_data[14];
+} sockaddr_s;
 
 #define ____GEN_B2F_FLAG_TRANSLATOR0()
 #define ____GEN_F2B_FLAG_TRANSLATOR0()

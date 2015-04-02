@@ -22,6 +22,12 @@ typedef int64_t		x86_64_ssize_t;
 typedef uint64_t	x86_64_time_t;
 typedef uint32_t	x86_64_uid_t;
 
+struct x86_64_cmsghdr {
+	x86_64_size_t	cmsg_len;
+	int32_t		cmsg_level;
+	int32_t		cmsg_type;
+};
+
 struct x86_64_iovec {
 	uint64_t	iov_base;
 	uint64_t	iov_len;
@@ -32,6 +38,21 @@ struct x86_64_linux_dirent {
 	x86_64_ulong_t	d_off;
 	x86_64_ushort_t	d_reclen;
 	char		d_name[1];
+};
+
+struct x86_64_user_msghdr {
+	uint64_t	msg_name;
+	int32_t		msg_namelen;
+	uint64_t	msg_iov;
+	x86_64_size_t	msg_iovlen;
+	uint64_t	msg_control;
+	x86_64_size_t	msg_controllen;
+	uint32_t	msg_flags;
+};
+
+struct x86_64_mmsghdr {
+	struct x86_64_user_msghdr	msg_hdr;
+	uint32_t			msg_len;
 };
 
 struct x86_64_sigaction {

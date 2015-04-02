@@ -22,6 +22,12 @@ typedef int32_t		mips32_ssize_t;
 typedef int32_t		mips32_time_t;
 typedef int32_t		mips32_uid_t;
 
+struct mips32_cmsghdr {
+	mips32_size_t	cmsg_len;
+	int32_t		cmsg_level;
+	int32_t		cmsg_type;
+};
+
 struct mips32_iovec {
 	uint32_t	iov_base;
 	uint32_t	iov_len;
@@ -32,6 +38,21 @@ struct mips32_linux_dirent {
 	mips32_ulong_t	d_off;
 	mips32_ushort_t	d_reclen;
 	char		d_name[1];
+};
+
+struct mips32_user_msghdr {
+	uint32_t	msg_name;
+	int32_t		msg_namelen;
+	uint32_t	msg_iov;
+	mips32_size_t	msg_iovlen;
+	uint32_t	msg_control;
+	mips32_size_t	msg_controllen;
+	uint32_t	msg_flags;
+};
+
+struct mips32_mmsghdr {
+	struct mips32_user_msghdr	msg_hdr;
+	uint32_t			msg_len;
 };
 
 struct mips32_sigaction {
