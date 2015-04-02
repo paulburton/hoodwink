@@ -1,6 +1,8 @@
 #include "backend.h"
 #include "debug.h"
+#include "frontend.h"
 #include "mips32.h"
+#include "string.h"
 #include "sys.h"
 #include "syscall.h"
 #include "util.h"
@@ -19,23 +21,46 @@ void frontend_syscall_args(const struct sys_state *sys, unsigned nargs, uint32_t
 		args[i] = ((uint32_t *)(mips->sys.mem_base + mips->cpu.gpr[29]))[i];
 }
 
+void frontend_clone_thread_finish(struct sys_state *sys)
+{
+	struct mips32_state *mips = (struct mips32_state *)sys;
+
+	/* skip over the clone syscall instruction */
+	mips->cpu.pc += 4;
+
+	if (mips->cpu.gpr[5])
+		mips->cpu.gpr[29] = mips->cpu.gpr[5];
+
+	if (mips->cpu.gpr[4] & CLONE_SETTLS)
+		mips->cpu.ulr = mips->cpu.gpr[7];
+
+	/* set syscall results */
+	mips->cpu.gpr[2] = 0;
+	mips->cpu.gpr[7] = 0;
+}
+
 static uint32_t translate_sys_clone(const struct sys_state *sys, uint32_t *args, void *_delta)
 {
 	int *parent_tidptr, *child_tidptr;
-	int signum_ok;
+	int signum, signum_ok;
 	unsigned long flags;
 
 	flags = args[0] & ~0xfful;
-	flags |= f2b_signum(args[0] & 0xff, &signum_ok);
-	if (!signum_ok) {
-		debug("Unrecognised signal number %d\n", args[0] & 0xff);
-		return -FRONT_EINVAL;
+	flags &= ~CLONE_SETTLS;
+
+	signum = args[0] & 0xff;
+	if (signum) {
+		flags |= f2b_signum(signum, &signum_ok);
+		if (!signum_ok) {
+			debug("Unrecognised signal number %d\n", signum);
+			return -FRONT_EINVAL;
+		}
 	}
 
 	parent_tidptr = args[2] ? sys->mem_base + args[2] : NULL;
 	child_tidptr = args[4] ? sys->mem_base + args[4] : NULL;
 
-	return backend_clone(flags, args[1], parent_tidptr, child_tidptr, args[3]);
+	return backend_clone(flags, parent_tidptr, child_tidptr);
 }
 
 static const struct syscall_info info_clone = {

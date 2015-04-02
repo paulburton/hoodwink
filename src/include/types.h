@@ -15,6 +15,9 @@
 
 #define NULL		((void *)0)
 
+#define CLONE_VM	0x00000100
+#define CLONE_SETTLS	0x00080000
+
 /* mode_t */
 #define S_IRWXU		00700
 #define S_IRUSR		00400

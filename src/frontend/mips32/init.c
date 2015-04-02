@@ -39,11 +39,9 @@ static uint32_t push_aux(struct mips32_state *mips, uint32_t type, uint32_t val)
 void frontend_init(const char *filename, int argc, const char *argv[])
 {
 	struct mips32_state mips;
-	struct mips32_delta delta;
 	struct elf_load_info elf_info;
-	struct mips32_siginfo siginfo;
-	unsigned stack_sz, sig_pending;
-	int err, prot, i, new_argc, restart_on_signal;
+	unsigned stack_sz;
+	int err, prot, i, new_argc;
 	uint32_t argv_addrs[argc + 1];
 	uint32_t envp[1];
 
@@ -104,18 +102,34 @@ void frontend_init(const char *filename, int argc, const char *argv[])
 	/* argc */
 	push_u32(&mips, new_argc);
 
+	frontend_loop(&mips.sys);
+}
+
+void frontend_loop(struct sys_state *sys)
+{
+	int restart_on_signal;
+	unsigned sig_pending;
+	struct mips32_state *mips = (void *)sys;
+	struct mips32_delta delta;
+	struct mips32_siginfo siginfo;
+
 	while (1) {
 		delta.count = 0;
-		frontend_interp_fetchexec(&mips, &delta, 0, &restart_on_signal);
+		frontend_interp_fetchexec(mips, &delta, 0, &restart_on_signal);
 
-		sig_pending = signal_pending(&mips.sys);
+		sig_pending = signal_pending(sys);
 		if (!sig_pending || !restart_on_signal)
-			frontend_interp_writeback(&mips, &delta);
+			frontend_interp_writeback(mips, &delta);
 
 		while (sig_pending) {
-			signal_dequeue(&mips.sys, &siginfo);
-			frontend_deliver_rt_signal(&mips.sys, &siginfo);
-			sig_pending = signal_pending(&mips.sys);
+			signal_dequeue(sys, &siginfo);
+			frontend_deliver_rt_signal(sys, &siginfo);
+			sig_pending = signal_pending(sys);
 		}
 	}
+}
+
+void frontend_copy(struct sys_state *dest, struct sys_state *src)
+{
+	memcpy(dest, src, sizeof(struct mips32_state));
 }

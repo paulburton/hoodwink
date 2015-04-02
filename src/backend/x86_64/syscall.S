@@ -20,3 +20,15 @@ sys_##name:					\
 SYSCALL(arch_prctl, int, int code, unsigned long addr)
 SYSCALL(clone, long, unsigned long clone_flags, unsigned long newsp, int *parent_tidptr, int *child_tidptr, int tls_val)
 SYSCALL(rt_sigreturn, void)
+
+.globl sys_clone_vm
+sys_clone_vm:
+	movl	$X86_64_NR_clone, %eax
+	mov	%rcx, %r10
+	syscall
+	testq	%rax, %rax
+	jz	1f
+	retq
+
+1:	mov	%rsp, %rdi
+	jmp	clone_thread_entry
