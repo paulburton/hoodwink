@@ -118,6 +118,8 @@
 	typedef struct arch##_stat64		prefix##stat64_s;	\
 	typedef struct arch##_termios		prefix##termios_s;	\
 	typedef struct arch##_timespec		prefix##timespec_s;	\
+	typedef struct arch##_timeval		prefix##timeval_s;	\
+	typedef struct arch##_timezone		prefix##timezone_s;	\
 	typedef struct arch##_tms		prefix##tms_s;		\
 	typedef struct arch##_ucontext		prefix##ucontext_s;	\
 	typedef struct arch##_utsname		prefix##utsname_s;

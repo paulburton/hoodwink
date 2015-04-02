@@ -155,6 +155,16 @@ struct x86_64_timespec {
 	x86_64_long_t	tv_nsec;
 };
 
+struct x86_64_timeval {
+	x86_64_time_t	tv_sec;
+	x86_64_long_t	tv_usec;
+};
+
+struct x86_64_timezone {
+	x86_64_int_t	tz_minuteswest;
+	x86_64_int_t	tz_dsttime;
+};
+
 struct x86_64_tms {
 	x86_64_clock_t	tms_utime;
 	x86_64_clock_t	tms_stime;

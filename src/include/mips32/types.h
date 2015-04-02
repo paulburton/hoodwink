@@ -152,6 +152,16 @@ struct mips32_timespec {
 	mips32_long_t	tv_nsec;
 };
 
+struct mips32_timeval {
+	mips32_time_t	tv_sec;
+	mips32_long_t	tv_usec;
+};
+
+struct mips32_timezone {
+	mips32_int_t	tz_minuteswest;
+	mips32_int_t	tz_dsttime;
+};
+
 struct mips32_tms {
 	mips32_clock_t	tms_utime;
 	mips32_clock_t	tms_stime;
