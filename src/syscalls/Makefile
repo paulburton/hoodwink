@@ -22,6 +22,7 @@ local_c_source := \
 	getuid.c \
 	ioctl.c \
 	lseek.c \
+	madvise.c \
 	mmap.c \
 	mprotect.c \
 	open.c \
