@@ -11,6 +11,7 @@ c_flags := \
 	-O2 -ggdb \
 	-Isrc/include \
 	-fno-asynchronous-unwind-tables \
+	-fno-math-errno \
 	-D_DEFAULT_SOURCE \
 	-DBACK_ARCH_$(call uppercase,$(BACK_ARCH)) \
 	-DFRONT_ARCH_$(call uppercase,$(FRONT_ARCH)) \

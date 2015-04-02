@@ -270,6 +270,23 @@ static int interp_cop1(const struct mips32_state *mips, struct mips32_delta *del
 
 #undef CASE_BINOP
 
+	case MIPS_COP1_SQRT:
+		debug_in_asm("sqrt.%s\t$f%u, $f%u\n",
+			     float_fmt_names[fmt], fd, fs);
+		switch (fmt) {
+		case FLT_S:
+			sgl[0].f = __builtin_sqrtf(sgl[0].f);
+			break;
+
+		case FLT_D:
+			dbl[0].d = __builtin_sqrt(dbl[0].d);
+			break;
+
+		default:
+			return 0;
+		}
+		break;
+
 #define CASE_CONVOP(op, name, dest, _rfmt)					\
 	case op:								\
 		debug_in_asm(name ".%s\t$f%u, $f%u\n",				\
