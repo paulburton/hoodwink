@@ -1,6 +1,7 @@
 #ifndef __hoodwink_sys_h__
 #define __hoodwink_sys_h__
 
+#include "spinlock.h"
 #include "types.h"
 
 struct sys_state {
@@ -14,7 +15,7 @@ struct sys_state {
 
 	front_sigaction_s sigactions[sizeof(sigset_t) * 8];
 	struct sig_queue {
-		_Atomic unsigned lock;
+		spinlock_t lock;
 		front_siginfo_s pending[5];
 		unsigned r_idx, w_idx;
 	} sigs, rt_sigs;

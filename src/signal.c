@@ -6,17 +6,17 @@
 static void signal_queue_init(struct sig_queue *q)
 {
 	q->r_idx = q->w_idx = 0;
-	q->lock = 0;
+	spin_init(&q->lock);
 }
 
 static void signal_queue_lock(struct sig_queue *q)
 {
-	q->lock++;
+	spin_lock(&q->lock);
 }
 
 static void signal_queue_unlock(struct sig_queue *q)
 {
-	q->lock--;
+	spin_unlock(&q->lock);
 }
 
 static void signal_queue_enqueue(struct sig_queue *q, const front_siginfo_s *info)
