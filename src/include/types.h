@@ -124,8 +124,10 @@
 	static const int prefix##MAP_ANONYMOUS = arch##_MAP_ANONYMOUS;	\
 	static const int prefix##MAP_DENYWRITE = arch##_MAP_DENYWRITE;	\
 	static const int prefix##MAP_FIXED = arch##_MAP_FIXED;		\
+	static const int prefix##MAP_NORESERVE = arch##_MAP_NORESERVE;	\
 	static const int prefix##MAP_PRIVATE = arch##_MAP_PRIVATE;	\
 	static const int prefix##MAP_SHARED = arch##_MAP_SHARED;	\
+	static const int prefix##MAP_STACK = arch##_MAP_STACK;		\
 	static const int prefix##O_RDONLY = arch##_O_RDONLY;		\
 	static const int prefix##O_WRONLY = arch##_O_WRONLY;		\
 	static const int prefix##O_RDWR = arch##_O_RDWR;		\
@@ -308,8 +310,10 @@ GEN_FLAG_TRANSLATOR(mmap_flags, int_t,
 	MAP_ANONYMOUS,
 	MAP_DENYWRITE,
 	MAP_FIXED,
+	MAP_NORESERVE,
 	MAP_PRIVATE,
-	MAP_SHARED)
+	MAP_SHARED,
+	MAP_STACK)
 
 GEN_FLAG_TRANSLATOR(open_flags, int_t,
 	O_APPEND,
