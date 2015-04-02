@@ -10,6 +10,9 @@ uint32_t translate_sys_fcntl64(const struct sys_state *sys, uint32_t *args)
 	case FRONT_F_GETFL:
 		return sys_fcntl(args[0], F_GETFL, args[2]);
 
+	case FRONT_F_SETFL:
+		return sys_fcntl(args[0], F_SETFL, args[2]);
+
 	default:
 		debug_syscall("Unrecognised fcntl cmd 0x%x\n", args[1]);
 		return -FRONT_EINVAL;

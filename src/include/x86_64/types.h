@@ -168,6 +168,7 @@ struct x86_64_rt_sigframe {
 
 #define X86_64_F_GETFD		1
 #define X86_64_F_GETFL		3
+#define X86_64_F_SETFL		4
 
 #define X86_64_MAP_SHARED	0x0001
 #define X86_64_MAP_PRIVATE	0x0002
