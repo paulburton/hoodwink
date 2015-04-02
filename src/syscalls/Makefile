@@ -10,6 +10,7 @@ local_c_source := \
 	exit_group.c \
 	fcntl.c \
 	fork.c \
+	fsync.c \
 	futex.c \
 	getcwd.c \
 	getdents.c \
