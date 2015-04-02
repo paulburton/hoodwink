@@ -28,6 +28,7 @@ local_c_source := \
 	poll.c \
 	read.c \
 	readlink.c \
+	rename.c \
 	rt_sigaction.c \
 	socket.c \
 	stat.c \
