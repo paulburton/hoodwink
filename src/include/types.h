@@ -135,6 +135,13 @@
 	static const int prefix##O_LARGEFILE = arch##_O_LARGEFILE;	\
 	static const int prefix##O_DIRECTORY = arch##_O_DIRECTORY;	\
 	static const int prefix##O_CLOEXEC = arch##_O_CLOEXEC;		\
+	static const int prefix##POLL_IN = arch##_POLL_IN;		\
+	static const int prefix##POLL_OUT = arch##_POLL_OUT;		\
+	static const int prefix##POLL_PRI = arch##_POLL_PRI;		\
+	static const int prefix##POLL_RDBAND = arch##_POLL_RDBAND;	\
+	static const int prefix##POLL_RDNORM = arch##_POLL_RDNORM;	\
+	static const int prefix##POLL_WRBAND = arch##_POLL_WRBAND;	\
+	static const int prefix##POLL_WRNORM = arch##_POLL_WRNORM;	\
 	static const int prefix##PROT_NONE = arch##_PROT_NONE;		\
 	static const int prefix##PROT_EXEC = arch##_PROT_EXEC;		\
 	static const int prefix##PROT_READ = arch##_PROT_READ;		\
@@ -159,6 +166,12 @@ typedef struct linux_dirent64 {
 	uint8_t		d_type;
 	char		d_name[0];
 } linux_dirent64_s;
+
+typedef struct pollfd {
+	int32_t		fd;
+	int16_t		events;
+	int16_t		revents;
+} pollfd_s;
 
 #define ____GEN_B2F_FLAG_TRANSLATOR0()
 #define ____GEN_F2B_FLAG_TRANSLATOR0()
@@ -308,6 +321,15 @@ GEN_FLAG_TRANSLATOR(open_flags, int_t,
 	O_RDWR,
 	O_TRUNC,
 	O_WRONLY)
+
+GEN_FLAG_TRANSLATOR(poll_events, short_t,
+	POLL_IN,
+	POLL_OUT,
+	POLL_PRI,
+	POLL_RDBAND,
+	POLL_RDNORM,
+	POLL_WRBAND,
+	POLL_WRNORM)
 
 GEN_FLAG_TRANSLATOR(prot, int_t,
 	PROT_EXEC,

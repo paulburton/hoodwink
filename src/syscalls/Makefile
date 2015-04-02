@@ -25,6 +25,7 @@ local_c_source := \
 	mprotect.c \
 	open.c \
 	pgrp.c \
+	poll.c \
 	read.c \
 	readlink.c \
 	rt_sigaction.c \
