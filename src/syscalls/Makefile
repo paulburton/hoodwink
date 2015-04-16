@@ -5,6 +5,7 @@ local_c_source := \
 	brk.c \
 	close.c \
 	dir.c \
+	dup.c \
 	execve.c \
 	exit.c \
 	exit_group.c \
