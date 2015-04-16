@@ -59,6 +59,11 @@ static uint32_t se16(unsigned imm)
 	return (uint32_t)(int32_t)(int16_t)imm;
 }
 
+static uint32_t rotr32(uint32_t val, unsigned bits)
+{
+	return (val >> bits) | (val << (32 - bits));
+}
+
 static uint32_t read_f32(const struct mips32_state *mips, unsigned fpr)
 {
 	return mips->cpu.fpr[fpr];
@@ -445,7 +450,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	unsigned rd = (inst >> 11) & 0x1f;
 	unsigned sa = (inst >> 6) & 0x1f;
 	unsigned imm = inst & 0xffff;
-	unsigned msb, lsb, sz, cc, tf, off;
+	unsigned msb, lsb, sz, cc, tf, off, rot;
 	int simm = se16(imm);
 	int do_ds = 0;
 	void *ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -476,8 +481,14 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			break;
 
 		case MIPS_SPEC_SRL:
-			debug_in_asm("srl\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
-			mips32_delta_set(delta, GPR0 + rd, gpr[rt] >> sa);
+			rot = (inst >> 21) & 0x1;
+			if (rot) {
+				debug_in_asm("rotr\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
+				mips32_delta_set(delta, GPR0 + rd, rotr32(gpr[rt], sa));
+			} else {
+				debug_in_asm("srl\t%s, %s, %u\n", reg_names[rd], reg_names[rt], sa);
+				mips32_delta_set(delta, GPR0 + rd, gpr[rt] >> sa);
+			}
 			break;
 
 		case MIPS_SPEC_SRA:
@@ -491,8 +502,14 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			break;
 
 		case MIPS_SPEC_SRLV:
-			debug_in_asm("srlv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
-			mips32_delta_set(delta, GPR0 + rd, gpr[rt] >> (gpr[rs] & 0x1f));
+			rot = (inst >> 6) & 0x1;
+			if (rot) {
+				debug_in_asm("rotrv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
+				mips32_delta_set(delta, GPR0 + rd, rotr32(gpr[rt], gpr[rs] & 0x1f));
+			} else {
+				debug_in_asm("srlv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
+				mips32_delta_set(delta, GPR0 + rd, gpr[rt] >> (gpr[rs] & 0x1f));
+			}
 			break;
 
 		case MIPS_SPEC_SRAV:
