@@ -221,6 +221,7 @@ enum mips_op_cop1x {
 };
 
 enum mips_op_spec3_bshfl {
+	MIPS_BSHFL_WSBH		= 0x02,
 	MIPS_BSHFL_SEB		= 0x10,
 	MIPS_BSHFL_SEH		= 0x18,
 };

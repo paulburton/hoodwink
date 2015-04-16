@@ -958,6 +958,13 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		case MIPS_SPEC3_BSHFL:
 			op = (inst >> 6) & 0x1f;
 			switch (op) {
+			case MIPS_BSHFL_WSBH:
+				debug_in_asm("wsbh\t%s, %s\n", reg_names[rd], reg_names[rt]);
+				mips32_delta_set(delta, GPR0 + rd,
+						 ((gpr[rt] & 0xff00ff00ul) >> 8) |
+						 ((gpr[rt] & 0x00ff00fful) << 8));
+				break;
+
 			case MIPS_BSHFL_SEB:
 				debug_in_asm("seb\t%s, %s\n", reg_names[rd], reg_names[rt]);
 				mips32_delta_set(delta, GPR0 + rd, se8(gpr[rt]));
