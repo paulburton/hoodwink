@@ -487,17 +487,17 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 		case MIPS_SPEC_SLLV:
 			debug_in_asm("sllv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
-			mips32_delta_set(delta, GPR0 + rd, gpr[rt] << gpr[rs]);
+			mips32_delta_set(delta, GPR0 + rd, gpr[rt] << (gpr[rs] & 0x1f));
 			break;
 
 		case MIPS_SPEC_SRLV:
 			debug_in_asm("srlv\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
-			mips32_delta_set(delta, GPR0 + rd, gpr[rt] >> gpr[rs]);
+			mips32_delta_set(delta, GPR0 + rd, gpr[rt] >> (gpr[rs] & 0x1f));
 			break;
 
 		case MIPS_SPEC_SRAV:
 			debug_in_asm("srav\t%s, %s, %s\n", reg_names[rd], reg_names[rt], reg_names[rs]);
-			mips32_delta_set(delta, GPR0 + rd, (int32_t)gpr[rt] >> gpr[rs]);
+			mips32_delta_set(delta, GPR0 + rd, (int32_t)gpr[rt] >> (gpr[rs] & 0x1f));
 			break;
 
 		case MIPS_SPEC_JR:
