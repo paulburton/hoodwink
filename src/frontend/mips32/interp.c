@@ -726,6 +726,19 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 			if ((int32_t)gpr[rs] < 0) {
 				delta->next_pc = tgt;
 				do_ds = 1;
+			} else {
+				delta->next_pc += 4;
+			}
+			break;
+
+		case MIPS_REGIMM_BGEZL:
+			tgt = delta->next_pc + (simm << 2);
+			debug_in_asm("bgezl\t%s, 0x%x\n", reg_names[rs], tgt);
+			if ((int32_t)gpr[rs] >= 0) {
+				delta->next_pc = tgt;
+				do_ds = 1;
+			} else {
+				delta->next_pc += 4;
 			}
 			break;
 
@@ -888,6 +901,8 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		if (gpr[rs] == gpr[rt]) {
 			delta->next_pc = tgt;
 			do_ds = 1;
+		} else {
+			delta->next_pc += 4;
 		}
 		break;
 
@@ -903,6 +918,20 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		if (gpr[rs] != gpr[rt]) {
 			delta->next_pc = tgt;
 			do_ds = 1;
+		} else {
+			delta->next_pc += 4;
+		}
+		break;
+
+	case MIPS_OP_BLEZL:
+		tgt = delta->next_pc + (simm << 2);
+		debug_in_asm("blezl\t%s, 0x%x\n", reg_names[rs], tgt);
+
+		if ((int32_t)gpr[rs] <= 0) {
+			delta->next_pc = tgt;
+			do_ds = 1;
+		} else {
+			delta->next_pc += 4;
 		}
 		break;
 
@@ -913,6 +942,8 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 		if ((int32_t)gpr[rs] > 0) {
 			delta->next_pc = tgt;
 			do_ds = 1;
+		} else {
+			delta->next_pc += 4;
 		}
 		break;
 
