@@ -32,6 +32,7 @@ local_c_source := \
 	readlink.c \
 	rename.c \
 	rt_sigaction.c \
+	set_tid_address.c \
 	socket.c \
 	stat.c \
 	statfs.c \
