@@ -16,10 +16,10 @@ local_c_source := \
 	getdents.c \
 	getegid.c \
 	geteuid.c \
-	getgid.c \
 	getpid.c \
 	getppid.c \
 	getuid.c \
+	gid.c \
 	ioctl.c \
 	lseek.c \
 	madvise.c \

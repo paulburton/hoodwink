@@ -58,6 +58,7 @@ SYSCALL(rt_sigaction, int, int signum, const sigaction_s *act, sigaction_s *olda
 SYSCALL(send, ssize_t, int fd, const void *buf, size_t len, int flags)
 SYSCALL(sendmmsg, int, int sockfd, mmsghdr_s *msgvec, unsigned int vlen, unsigned int flags)
 SYSCALL(sendto, ssize_t, int fd, const void *buf, size_t len, int flags, sockaddr_s *dest_addr, int *addrlen)
+SYSCALL(setgid, int, gid_t gid)
 SYSCALL(setpgid, int, pid_t pid, pid_t pgid)
 SYSCALL(socket, int, int domain, int type, int protocol)
 SYSCALL(stat, int, const char *filename, stat_s *buf)
