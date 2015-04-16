@@ -436,7 +436,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	uint32_t pc = mips->cpu.pc + pc_off;
 	uint32_t inst = *(uint32_t *)(mips->sys.mem_base + pc);
 	const uint32_t *gpr = &mips->cpu.gpr[0];
-	uint32_t tgt;
+	uint32_t tgt, u32;
 	uint64_t u64;
 	int32_t i32;
 	unsigned op = inst >> 26;
@@ -445,7 +445,7 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 	unsigned rd = (inst >> 11) & 0x1f;
 	unsigned sa = (inst >> 6) & 0x1f;
 	unsigned imm = inst & 0xffff;
-	unsigned msb, lsb, sz, cc, tf;
+	unsigned msb, lsb, sz, cc, tf, off;
 	int simm = se16(imm);
 	int do_ds = 0;
 	void *ptr = mips->sys.mem_base + (uintptr_t)gpr[rs] + simm;
@@ -1002,7 +1002,12 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 	case MIPS_OP_LWL:
 		debug_in_asm("lwl\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
-		/* TODO: FIXME! */
+		off = (((unsigned long)ptr & 0x3) ^ 0x3) * 8;
+		ptr = (void *)((unsigned long)ptr & ~0x3ul);
+		u32 = gpr[rt];
+		u32 &= 0x7fffffff >> (off ^ 31);
+		u32 |= *(uint32_t *)ptr << off;
+		mips32_delta_set(delta, GPR0 + rt, u32);
 		break;
 
 	case MIPS_OP_LW:
@@ -1022,8 +1027,12 @@ void frontend_interp_fetchexec(const struct mips32_state *mips, struct mips32_de
 
 	case MIPS_OP_LWR:
 		debug_in_asm("lwr\t%s, %d(%s)\n", reg_names[rt], simm, reg_names[rs]);
-		/* TODO: FIXME! */
-		mips32_delta_set(delta, GPR0 + rt, *(uint32_t *)ptr);
+		off = ((unsigned long)ptr & 0x3) * 8;
+		ptr = (void *)((unsigned long)ptr & ~0x3ul);
+		u32 = gpr[rt];
+		u32 &= 0xfffffffe << (off ^ 31);
+		u32 |= *(uint32_t *)ptr >> off;
+		mips32_delta_set(delta, GPR0 + rt, u32);
 		break;
 
 	case MIPS_OP_SB:
